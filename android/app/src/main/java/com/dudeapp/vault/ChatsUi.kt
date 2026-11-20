@@ -439,6 +439,7 @@ fun ChatScreen(
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
+    val preColors = preReColors()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var messages by remember(chat.dir.absolutePath) { mutableStateOf<List<ChatMessage>>(emptyList()) }
@@ -670,29 +671,39 @@ fun ChatScreen(
                 .statusBarsPadding()
                 .imePadding(),
         ) {
+            // Header from the design: 56dp, chevron, 32dp avatar, name over a 50% line.
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 6.dp),
+                    .height(56.dp)
+                    .background(preColors.page)
+                    .padding(start = 4.dp, end = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = preColors.ink,
+                        modifier = Modifier.size(24.dp),
+                    )
                 }
-                ChatAvatar(chat, 38.dp)
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
+                ChatAvatar(chat, 32.dp)
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = chat.name,
-                        style = MaterialTheme.typography.titleMedium,
+                        color = preColors.ink,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "Local chat",
-                        color = TextSoft,
-                        fontSize = 11.sp,
+                        text = "Active recently",
+                        color = preColors.ink.copy(alpha = 0.5f),
+                        fontSize = 12.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -701,10 +712,17 @@ fun ChatScreen(
                     Icon(
                         imageVector = Icons.Outlined.AddAPhoto,
                         contentDescription = "Edit chat picture",
+                        tint = preColors.ink,
                         modifier = Modifier.size(20.dp),
                     )
                 }
             }
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(0.5.dp)
+                    .background(preColors.divider),
+            )
 
             val selectedMessage = selected
             if (selectedMessage != null) {
@@ -914,10 +932,10 @@ fun ChatScreen(
                 OutlinedTextField(
                     value = draft,
                     onValueChange = { draft = it },
-                    placeholder = { Text(if (editing != null) "Edit message" else "Message") },
+                    placeholder = { Text(if (editing != null) "Edit message" else "Message...") },
                     maxLines = 4,
                     enabled = !recording,
-                    shape = RoundedCornerShape(24.dp),
+                    shape = PreReControlShape,
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(focusRequester),
@@ -1063,7 +1081,8 @@ private fun MessageBubble(
     onSelect: () -> Unit,
 ) {
     val context = LocalContext.current
-    val shape = RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp)
+    val preColors = preReColors()
+    val shape = RoundedCornerShape(18.dp)
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
@@ -1080,22 +1099,12 @@ private fun MessageBubble(
         }
         Column(
             Modifier
-                .widthIn(max = 300.dp)
+                .widthIn(max = 280.dp)
                 .clip(shape)
-                .background(
-                    if (selected) {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
-                    } else {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-                    },
-                )
+                .background(preColors.bubbleMine)
                 .border(
-                    width = if (selected) 1.5.dp else 1.dp,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
-                    },
+                    width = if (selected) 2.dp else 0.dp,
+                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
                     shape = shape,
                 )
                 .combinedClickable(onClick = onSelect, onLongClick = onSelect)
@@ -1141,25 +1150,27 @@ private fun MessageBubble(
                             Icon(
                                 imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
                                 contentDescription = if (playing) "Pause voice note" else "Play voice note",
+                                tint = preColors.onBubbleMine,
                             )
                         }
                         Spacer(Modifier.width(4.dp))
                         Column {
                             Text(
                                 text = "Voice message",
+                                color = preColors.onBubbleMine,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                             )
                             Text(
                                 text = formatDuration(message.durationMs),
-                                color = TextSoft,
+                                color = preColors.onBubbleMine.copy(alpha = 0.65f),
                                 fontSize = 11.sp,
                             )
                         }
                     }
                 }
 
-                else -> Text(message.text, fontSize = 15.sp)
+                else -> Text(message.text, fontSize = 15.sp, color = preColors.onBubbleMine)
             }
             Spacer(Modifier.height(2.dp))
             Row(
@@ -1168,14 +1179,14 @@ private fun MessageBubble(
             ) {
                 Text(
                     text = listTimeOf(context, message.stamp),
-                    color = TextSoft,
+                    color = preColors.onBubbleMine.copy(alpha = 0.6f),
                     fontSize = 10.sp,
                 )
                 Spacer(Modifier.width(3.dp))
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Saved on device",
-                    tint = TextSoft,
+                    tint = preColors.onBubbleMine.copy(alpha = 0.6f),
                     modifier = Modifier.size(12.dp),
                 )
             }
