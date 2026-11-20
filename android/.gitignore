@@ -1,0 +1,12 @@
+.gradle/
+.kotlin/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+P-Vault.apk
+
+# The full-size artwork the theme backgrounds were cut from.
+art_src/

@@ -1,0 +1,56 @@
+package com.dudeapp.vault
+
+import android.content.Context
+
+data class AppSettings(
+    val autoBackup: Boolean = true,
+    val reminderDays: Int = 7,
+    val keepBackups: Int = 2,
+    /** Most Drive space pre re's backups may use, in GB; 0 means no limit. */
+    val backupLimitGb: Int = 5,
+    val appLock: Boolean = true,
+    val lockChoiceMade: Boolean = false,
+    val lockDelaySeconds: Int = 0,
+    val biometricUnlock: Boolean = true,
+    /** The Advanced page and bundles are hidden from the Theme page while this is off. */
+    val advancedMode: Boolean = true,
+    /** Grid cards (the default) or one item per row. */
+    val cardsAsList: Boolean = false,
+)
+
+internal val REMINDER_DAY_OPTIONS = listOf(1, 7, 14, 30)
+internal val KEEP_BACKUP_OPTIONS = listOf(1, 2, 3, 5, 10)
+internal val BACKUP_LIMIT_OPTIONS = listOf(1, 2, 5, 10, 15, 50, 100, 0)
+internal val LOCK_DELAY_OPTIONS = listOf(0, 30, 60, 300)
+
+class SettingsStore(context: Context) {
+    private val prefs = context.getSharedPreferences("dude_settings", Context.MODE_PRIVATE)
+
+    fun load(): AppSettings = AppSettings(
+        autoBackup = prefs.getBoolean("auto_backup", true),
+        reminderDays = prefs.getInt("reminder_days", 7).coerceIn(1, 90),
+        keepBackups = prefs.getInt("keep_backups", 2).coerceIn(1, 10),
+        backupLimitGb = prefs.getInt("backup_limit_gb", 5).coerceIn(0, 2000),
+        appLock = prefs.getBoolean("app_lock", true),
+        lockChoiceMade = prefs.getBoolean("lock_choice_made", false),
+        lockDelaySeconds = prefs.getInt("lock_delay_seconds", 0).coerceIn(0, 300),
+        biometricUnlock = prefs.getBoolean("biometric_unlock", true),
+        advancedMode = prefs.getBoolean("advanced_mode", true),
+        cardsAsList = prefs.getBoolean("cards_as_list", false),
+    )
+
+    fun save(settings: AppSettings) {
+        prefs.edit()
+            .putBoolean("auto_backup", settings.autoBackup)
+            .putInt("reminder_days", settings.reminderDays.coerceIn(1, 90))
+            .putInt("keep_backups", settings.keepBackups.coerceIn(1, 10))
+            .putInt("backup_limit_gb", settings.backupLimitGb.coerceIn(0, 2000))
+            .putBoolean("app_lock", settings.appLock)
+            .putBoolean("lock_choice_made", settings.lockChoiceMade)
+            .putInt("lock_delay_seconds", settings.lockDelaySeconds.coerceIn(0, 300))
+            .putBoolean("biometric_unlock", settings.biometricUnlock)
+            .putBoolean("advanced_mode", settings.advancedMode)
+            .putBoolean("cards_as_list", settings.cardsAsList)
+            .apply()
+    }
+}

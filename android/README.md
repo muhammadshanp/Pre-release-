@@ -1,0 +1,225 @@
+# pre re
+
+Website: **https://muhammadshanp.github.io/p-vault-website/** (source: [p-vault-website](https://github.com/muhammadshanp/p-vault-website))
+
+A private vault for photos, PDFs, text notes and Instagram Reels. Android only. Local by default, with optional Google Drive backup.
+
+## Download
+
+Latest APK: **https://github.com/muhammadshanp/p-vault/releases/latest/download/P-Vault.apk** (Android 8.0 or newer). All versions are on the [Releases page](https://github.com/muhammadshanp/p-vault/releases). Once installed, pre re offers later updates by itself.
+
+## What's new
+
+- **0.5.48-pro** — A pre-release test build, so the ordinary app gets neither this nor any update notice. It is named **pre re Pro** under the icon (the name comes from the version suffix, so normal releases stay "pre re"), and the bottom bar's "PDFs" tab is now "Files", which covers photos-and-PDFs and no longer collides with the Home tab at narrow widths.
+- **0.5.47** — One spacing scale. Screens had ten different side margins (8, 10, 12, 14, 16, 20, 22, 24); they now share `Spacing.Screen` (20dp), cards sit `Spacing.Card` (12dp) apart, and the Theme grid's gutter matches the vault grid. Corners stay as the theme sets them.
+- **0.5.46-test** — A test build, published as a pre-release so the app never offers it: the username work back on top of 0.5.45.
+- **0.5.44** — The admin panel decides whether a username can be changed at all: with the switch off, the first name someone takes stands, the profile shows it read-only, and the app refuses a change before the database is even asked.
+- **0.5.43** — Usernames get a Firebase session the way Firebase actually requires it: Google's account picker returns an ID token, which is exchanged for the session before a name is written. The old path rebuilt a session from an access token, which Firebase always refuses.
+- **0.5.42** — Usernames are written with a Firebase session for the signed-in person, so the database rules apply to them and not just to the project owner: anyone signed in can take, change and give back a name.
+- **0.5.41** — A username can be changed: the sheet shows Google's permission screen when the name needs saving, the Keep button offers itself for the name actually typed, and the old name is handed back so it does not stay taken.
+- **0.5.40** — A username is only offered to a signed-in Google account, because a name has to belong to somebody; without a sign-in the profile sheet says so and points at the sign-in below it.
+- **0.5.39** — The Theme page is in the menu for everyone (only its picture looks need access), signing in with Google has its own menu item, and the admin panel gets a Names page for reserving usernames nobody else can take.
+- **0.5.38** — Profile changes show at once (a new photo gets its own file, and the sheet rebuilds from what was saved), plus usernames: unique across phones, checked as typed, with insults and impersonation refused.
+- **0.5.37** — pre re shows up in Android's share sheet for files, not just text: photos land in Images, PDFs in PDFs, several files at once work, and anything else is turned away with a word. Shared text follows the same idea: a reel link opens the reel dialog, any other text opens a note already carrying it.
+- **0.5.36** — Adding a PDF no longer throws the user back to Home or to the lock screen: the Add sheet is closed and stays closed across the trip, the PDFs page is forced back into view after a rebuild, and coming back from a picker never arms the app lock.
+- **0.5.35** — Android 11 fixes and an honest answer when a picker comes back empty: the Files page is remembered across the trip, the camera's photo file is on disk before the camera takes the app away, and PDFs can be picked with "All files" when a browser's download page will not hand them back.
+- **0.5.34** — The advanced switch takes effect on the tap, whichever switch is used: the whole app re-themes at once — colours, background, cards and system bars — instead of needing a restart.
+- **0.5.33** — Turning advanced mode off switches the advanced things off, not just their screens: card photos, the background image and the themed look stand aside and the chosen theme's own background and cards come back. They come back as they were when advanced mode is turned on again.
+- **0.5.32** — Advanced mode has its switch on the Theme page itself, next to the Advanced row, so it can be turned on and off where the page lives; turning it off closes the pages it hides.
+- **0.5.31** — Photos and PDFs can be shown as cards or as a list (Settings → Photos and PDFs). The Advanced page now lists only the themes you made, with a way through to the bundles. Bundles can be renamed, deleted and filled in one go from inside the bundle, and the Theme page is split into Light and Dark / Picture looks / Downloaded.
+- **0.5.30** — The whole background is one choice in Advanced: the theme's own background, or one image of your own. Picking one replaces the other, and the theme then supplies only the colours. Card photos stay separate, behind each card's own label.
+- **0.5.29** — Bundles now live inside the Advanced page (no menu item), and the Support page is removed everywhere, with the suggestion channel it used.
+- **0.5.28** — The suggestion page is gone: Support is the only way to write to the admin, so there is one channel and one inbox. The "Give suggestion" menu item, its address switch and the admin's suggestions list are removed with it.
+- **0.5.27** — The Assistant page is now Support: one message to the admin from a page, with a screenshot or short video, on the same channel as Give suggestion. Advanced mode has a switch in Settings, so the Theme page can be the ordinary list again. Bundles: your own themes, grouped into named sets.
+- **0.5.26** — Bundles: make your own themes on the phone (a background photo and a photo for each card) and group them into named bundles; one theme can sit in several. The admin panel is now three pages — Message, People, Account — and there is an Assistant page, off unless the admin gives the Assistant switch to an address.
+- **0.5.25** — Every card is the same size on every theme, and a card picture is now a background behind the card's own label instead of a replacement for the card. The Advanced page lets you pick a photo for each card — the big Home card and the four Library tiles — and the card keeps its size, its name and its count.
+- **0.5.24** — Access is now per address. Each Google address gets a level — No access, Theme, Theme + Advanced, or Everything — plus each switch (Give suggestion) and each look that is shared by hand. The Advanced page opens for the addresses you allow, and Nightfall is shared per address instead of being admin-only. Moonlit stays the owner's.
+- **0.5.23** — A card picture in an advanced theme now fills its card, cropped to fit, so any picture size works; the card keeps its size and the label stays readable over a soft wash.
+- **0.5.22** — **Advanced themes** page (menu → Theme → Advanced), where the background of the app and the picture inside each card are separate choices. First look: **Nightfall** (admin only) — moon over pines behind the screen, and its own artwork inside the big Home card and each Library tile.
+- **0.5.21** — A new look, **Moonlit**, for the admin only: violet night sky with a moon over pine trees, glassy cards, tinted Home tiles and the artwork inside the big Home card. Other people with special access do not see it. Its extras are theme settings (`glass`, `tileTints`, `heroArt`), so a catalogue theme can ask for them too.
+- **0.5.20** — Cards are solid again on every theme (0.5.19 made them see-through, which broke the normal look). On a picture theme the artwork now sits inside the big Home card, on its right side, fading into the card colour; the picture stays behind the screen.
+- **0.5.19** — The picture themes now show through the cards: on Home each card carries a wash of its own colour and a faint icon, and the background picture stays visible further down the screen instead of being flattened to black.
+- **0.5.18** — A small release to prove the automatic publishing works: bumping the version and merging is all it takes. No feature changes.
+- **0.5.17** — The Theme page has a **New themes** button: looks published to the theme catalogue appear without a new app build, with their pictures downloaded once and kept for offline use. A look can also be limited to chosen addresses. The catalogue file and its format are in `theme-catalog/`.
+- **0.5.16** — A **Theme** page for people with special access: Grand Line, Racing, Shinobi, Midnight (anime), Sakura, Minimal, Neon, Forest, Gold and Ocean, each with its own colours, vault card and background picture. Light and Dark stay free for everyone.
+- **0.5.15** — People with special access can send a suggestion to the admin from the menu, with a screenshot or a short video (up to 10 MB). The admin reads them in the admin panel; each is deleted after 2 days.
+- **0.5.14** — Hold a photo, PDF or note to start selecting several, like a gallery. Optional "Sign in with Google" on the profile sheet; it fills in your name and picture. The admin can give special access to chosen Google addresses from the admin panel.
+- **0.5.13** — Copy a chat message. The camera permission is asked the first time you use Camera or Scan document.
+- **0.5.12** — Scan a document to PDF. Take a photo straight into the vault. The + button on Images and PDFs opens a menu (Scan, Camera, Files or Gallery). Tick boxes in notes. Notifications sent from the Firebase console also land in the bell list. Backup size limit (5 GB by default).
+- **0.5.11** — Chat reminders: hold a message, tap **Remind me**, pick a time. A notification arrives then, or a pop-up if pre re is open. A Reminders list (alarm button beside the Chats title) shows everything you set.
+- **0.5.10** — Optional backup password: backups and exports are encrypted. Favourites, with a star on any file and a Favourites list on Home. Swipe left and right between photos. Dark start-up screen with the dark theme (Android 12+). Share several selected files (or reel links) at once. Settings switches are clearly visible and labelled On/Off.
+- **0.5.9** — The navigation pill moves with the page instantly, with no lag. Share and Download buttons on opened files. Pick several photos or PDFs at once. Sort Images, PDFs and Notes by date, name or size. Push notifications show the pre re mark.
+- **0.5.8** — The navigation pill slides smoothly between tabs and follows your finger while swiping.
+- **0.5.7** — New floating navigation capsule with a glowing pill for the current tab; lists scroll behind it and the + button sits above it.
+- **0.5.6** — Floating bottom navigation bar with rounded corners. New Settings layout. Push notifications from the pre re team through Firebase, with an admin panel for the owner to send them. The start-up logo fades out smoothly. A bell icon at the top lists received notifications. A weekly suggestion to connect Google Drive when no backup folder is set.
+- **0.5.5** — Restoring a backup adds it to the vault and keeps the files already on the phone. Reels show the Instagram logo.
+- **0.5.4** — Reliable Google Drive backups: every backup has its own name, clean-up never removes the newest one, and the write is verified.
+- **0.5.3** — Slide-in menu from the three-line button; profile picture at the top right.
+- **0.5.2** — Updates download and install from inside the app; smoother swiping between tabs.
+- **0.5.1** — Rebuilt bottom navigation and an open/close animation for Settings.
+- **0.5.0** — Redesigned interface.
+
+## What it does
+
+- Your profile: name and photo, stored on the device and included in Drive backups when you use them.
+- A clean white theme by default, with an optional flat Dark theme.
+- Import images (system photo picker) and PDFs (system file picker) — no storage permission needed.
+- Write, view and edit plain text notes.
+- A WhatsApp-style Chats view inside Notes. Create your own chats and add text, photo and voice messages (voice notes need the microphone permission). Give each chat its own picture from the photo icon in its header or the chat manager, and change or remove it from the same menu. Rename or delete chats from the edit button beside the Chats title. Every message has a saved tick; tap a message to select it, then edit or delete it. **Remind me** on a selected message sets a reminder for a time you choose: a notification arrives then, or a pop-up if pre re is open. Messages stay on the device.
+- Save Instagram Reels as links, organised into categories (Pending, Tech, AI, Anime, Others, plus your own). Links are validated before saving.
+- Share a reel from Instagram straight into pre re; it opens the save dialog with Pending selected.
+- Browse in five tabs: Files, Reels, Images, PDFs, Notes. Search by title, filter reels by category.
+- Swipe left or right on the content to move between tabs.
+- The Notes tab opens Chats by default; switch the Chats/Notes chips to see plain notes.
+- A floating + button on every tab, including Home: add a file, reel, photo, PDF, note or chat.
+- Open a photo, PDF or note and use **Share** to send it to another app or **Download** to save a copy to the phone's Downloads/pre re folder (on Android 9 and older you pick the folder).
+- Pick up to 50 photos or several PDFs in one go.
+- Sort Images, PDFs and Notes with the sort button beside the section title: newest, oldest, name A to Z, name Z to A, or largest first. The choice is remembered.
+- **Scan a document**: on the PDFs tab tap **+ → Scan document**. Google's scanner finds the page edges, straightens the pages and saves them as one PDF. It needs Google Play services, and the internet the first time (to fetch the scanner).
+- **Camera**: **+ → Camera** takes a photo straight into the vault, so it never appears in the phone's gallery. From the PDFs tab the photo is saved as a one-page PDF.
+- **Checklists in notes**: a line that starts with `[ ]` is a tick box and `[x]` a ticked one. Tap a box to tick it, or use the "Add a checklist item" field under the note.
+- Star a file to keep it in **Favourites** on the Home page.
+- Swipe left and right in an opened photo to move through your photos; pinch to zoom.
+- Rename and delete items (in the ⋮ menu of an opened file). Reels can be moved between categories; categories can be renamed (Pending is reserved).
+- Tap the pencil on any section to select multiple files, reels, notes or chats and delete them together. A selection of files or reels can also be shared in one go.
+- Search hints and item counts follow the current section.
+- Optionally locked behind a PIN (salted SHA-256 hash) and optional fingerprint. On first launch, pre re asks whether you want a PIN; choose Skip to use it without a lock. The fingerprint prompt opens automatically when you return to the app; PIN is the fallback. Five wrong PIN attempts lock the app for 30 seconds. Auto-lock can run immediately, after 30 seconds, after 1 minute, or after 5 minutes. The launch PIN can be turned off in Settings.
+- A full Settings screen: theme, app lock on/off, change PIN, fingerprint unlock, auto-lock delay, auto-backup on/off, backup reminder interval, backups kept, export/import, clear vault data, and About/version.
+- Screenshots, screen recording and the recent-apps preview are allowed.
+- Optional Google Drive backup through Android's system folder picker. Install the free Google Drive app, sign in there, and pick a Drive folder once. No Google Cloud project or paid plan is needed. Local storage stays primary. A dedicated Google account just for backups is a good idea. Backups are not encrypted.
+- On launch, checks the public GitHub Releases page for a newer version and shows an **Update available** dialog. Tap **Update now** and the release APK downloads inside pre re, is checked (it must be pre re, not older, and signed with the same key), and is handed to Android's installer. Android still asks you to confirm, and the first time it asks you to allow pre re to install apps. If the in-app download fails, **Use browser** opens the download instead.
+- Everything lives in the app's private storage. The network is used for the GitHub version check, the APK download from the GitHub release when you choose to update, and Firebase Cloud Messaging, which registers the device with Google so push notifications can be delivered; Drive uploads are handled by the Google Drive app. There is no backend and no other server.
+
+## Stack
+
+- Kotlin 2.1 / Jetpack Compose (Material 3)
+- Coil for images, built-in `PdfRenderer` for PDFs
+- `androidx.biometric` for fingerprint
+- Android Storage Access Framework (`DocumentsContract`) for the Drive folder
+- No database, no backend of its own, no blur effects. pre re writes a normal zip; the Google Drive app uploads it. One HTTPS request checks the latest GitHub release on launch. Firebase Cloud Messaging delivers push notifications.
+
+Metadata is the filename: `<timestamp>_<title>.<ext>`. Reels are small `.reel` files containing the URL, grouped in `reels/NN_<Category>` folders. `reels/00_Pending` is created automatically for shared reels. Chats are folders in `chats/NN_<Name>`, one timestamped `.txt` file per message; editing rewrites that file, deleting removes it. A chat picture is stored as `avatar_<timestamp>` in the same folder.
+
+## Build
+
+Requirements: JDK 17+ and the Android SDK (platform 35, build-tools 35.0.0).
+
+```powershell
+.\gradlew assembleRelease
+```
+
+The APK is written to `app\build\outputs\apk\release\app-release.apk`. It is an optimised release build signed with the debug key, because every earlier pre re was signed with that key and updates must match it. `build.ps1` does the same and copies the result to `P-Vault.apk`.
+
+## Updates
+
+pre re reads the latest release from `https://api.github.com/repos/muhammadshanp/p-vault/releases/latest` when it opens. If the release tag is newer than the installed version, it shows **Update available**; **Update now** downloads the release APK inside the app and opens Android's installer.
+
+To publish an update:
+
+1. Raise `versionCode` and `versionName` in `app/build.gradle.kts`.
+2. Merge to `main`.
+
+The **Release** workflow then builds `P-Vault.apk`, checks it is signed with the original key, and publishes a release tagged `v<versionName>`. If a draft release with that tag exists, its notes are kept and the APK is attached to it. A version that is already published is left alone. The workflow needs the `DEBUG_KEYSTORE_BASE64` repository secret (the base64 text of the `debug.keystore` that signed earlier releases).
+
+To release by hand instead, build `P-Vault.apk` with `build.ps1` on the original PC, create a GitHub release with a tag such as `v0.5.5`, attach the APK, and publish it.
+
+The tag must contain the version number (`v0.5.5` or `0.5.5` both work). No update file needs to be uploaded separately. Offline launches skip the check silently.
+
+## Notifications
+
+pre re receives push notifications through Firebase Cloud Messaging (free plan), so a message arrives even when the app is closed. Android 13 and newer ask once for permission to show notifications; Settings → Notifications opens Android's switch for them.
+
+### Admin panel
+
+The owner can send a notification to all users from inside the app:
+
+1. Open the menu, then press and hold **Version …** at the bottom. The admin panel opens.
+2. Tap **Sign in with Google** and choose the Google account that owns the Firebase project.
+3. Write a title and message and tap **Send to all users**.
+
+Notifications sent from the admin panel are also saved on each phone and listed behind the **bell icon** at the top of the app, with a dot when there is something new. After the first sign-in, **Admin panel** stays in the menu on that phone. Google decides who may send: only accounts with access to the Firebase project are accepted, and no key or password is stored in the app. One-time setup in the Firebase console: add the SHA-1 of the signing key under Project settings → Your apps, and enable Google under Authentication → Sign-in method.
+
+### Firebase console
+
+Messages sent this way appear in the status bar, but are only added to the bell list if pre re is open when they arrive. To send a message to everyone without the app, open the [Firebase console](https://console.firebase.google.com/project/p-vault-app/messaging), choose **Messaging** → **New campaign** → **Notifications**, write the title and text, target the app `com.dudeapp.vault` (or the topic `all`), and publish. Only people with access to the Firebase project can send.
+
+`app/google-services.json` identifies the Firebase project. It contains identifiers, not passwords. Firebase Analytics is not included.
+
+## Data and reinstall
+
+- **Updating the app keeps everything.** Installing a new APK over the old one does not touch the vault, settings, profile or Drive connection.
+- **Uninstalling deletes the local vault.** Android removes app-private files. Your Google Drive backups are not deleted.
+- **Android Auto Backup is enabled.** When Google backup is on and the vault fits Android's backup quota (about 25 MB), Android can restore the app-private files after a reinstall. This is not guaranteed and depends on the phone and backup timing.
+- **If Auto Backup does not restore**, the first launch with no local data shows **Restore your vault?**. Choose **Restore from Drive**, pick the latest `P_Vault_*.zip` (or `.pvault` if you set a backup password), and the app restores it.
+- **Reconnect Drive once after a reinstall.** Android revokes the folder permission even when Auto Backup restores the saved folder name. Tap **Connect** and pick the same folder again; the existing backups stay there.
+- **An empty vault is not auto-backed up.** A fresh install cannot add an empty zip and push out a good backup. Normal **Backups kept** pruning still applies when a real backup is made.
+
+Auto Backup stores app data in the user's Google account, including vault files and settings. The Drive folder backup remains the reliable full copy.
+
+## Sharing reels
+
+In Instagram, open a reel, tap Share, and choose pre re. The app opens on the Reels tab with the link filled in and Pending selected. Save it there, then move it to Tech, AI, Anime, Others or your own category from its ⋮ menu whenever you are ready. You can also paste a link manually with +. Only valid `http`/`https` links can be saved.
+
+## Google Drive backup
+
+This uses the free Google Drive app and Android's own folder picker. There is no Google Cloud project to create and pre re never asks for your Google password.
+
+1. Install the Google Drive app from Play Store and add your Google account there.
+2. Open your profile in pre re and find **Google Drive backup**.
+3. Tap **Connect**. Android's file picker opens. Choose **Drive**, then pick or create a folder such as `pre re Backups`, and allow access.
+4. Tap **Back up now** to write `P_Vault_<timestamp>.zip` into that folder.
+
+The folder permission is remembered, so you connect once. If you uninstall the Drive app or delete the folder, connect again.
+
+- **Auto-backup:** about 20 seconds after you stop changing the vault, pre re writes a fresh full zip while the app is open. It only runs when a Drive folder is connected. Turn it off in Settings if you prefer manual backups only. If you close the app before the wait finishes, the pending change is retried when you next open pre re with Drive connected. This is one-way; it never downloads changes from Drive.
+- **Backup reminder:** when you open pre re with Drive connected, it offers a backup when the last successful one is older than the interval you chose in Settings (daily, weekly, every 2 weeks or monthly). **Later** snoozes it for the same interval. This is only an in-app reminder; it does not upload by itself.
+- **Backup size limit:** the most Drive space pre re's backups may use: 1, 2, 5 (default), 10, 15, 50 or 100 GB, or no limit. A backup larger than the limit is not made and pre re says so; when the kept backups would not fit together, the older ones are removed. A free Google account has 15 GB in total, shared with Gmail and Google Photos, so a higher limit needs a paid Google One plan.
+- **Backups kept:** the connected folder keeps the newest 1, 2, 3, 5 or 10 `P_Vault_*.zip` files as set in Settings. Older P_Vault backups in that folder are deleted. Old `Dude_*.zip` files are left alone.
+- **Restore from a zip file (local or Drive)** opens the same Android picker, so you can pick a backup from the Drive folder or from the phone.
+- **Restore merges.** Files already on the phone stay. Items from the backup are added; ones the phone already has are skipped, and a vault item or reel with the same name but different content is kept as a second copy. Reel categories and chats with the same name are combined.
+
+**Backup password (optional).** In Settings → Backup → **Backup password** you can set a password. From then on backups and exports are encrypted (AES-256-GCM, key stretched from the password with PBKDF2) and saved as `P_Vault_<timestamp>.pvault` instead of a zip. After the next successful backup, the older unprotected `P_Vault_*.zip` files are removed from the connected folder. Restoring on the same phone does not ask for the password; on another phone, or after a reinstall or a password change, it does. **There is no reset: if the password is forgotten, those backups cannot be opened.** Only the stretched key is kept on the phone, in the app's private storage.
+
+Without a backup password, backups are ordinary zip files, not encrypted, and anyone with access to the Google account can read them. The vault on the phone itself is not encrypted either way. Keep pre re open while a backup or restore is running; Android can stop a backgrounded app on a large vault.
+
+Drive backup is one-way, not live sync. Auto-backup runs only while pre re is open; if you close the app before the 20-second wait, the pending change is retried on the next launch when Drive is connected. The backup reminder appears only when you open the app; it is not a background notification.
+
+pre re writes to the folder through Android's storage provider, and the Google Drive app does the network upload. The app's only other network use is the GitHub update check and update download. If the Drive app reports that storage is full, free space and back up again.
+
+
+## Settings
+
+Tap the three-line menu button at the top left to slide the menu in: Profile, Settings, Back up now, Check for updates and About. Your profile picture at the top right opens your profile. Open Settings from the menu. It includes:
+
+- Theme: Light or Dark.
+- App lock on/off, change PIN, fingerprint unlock, and auto-lock delay.
+- Auto-backup on/off and the backup reminder interval.
+- How many backups to keep in the Google Drive folder.
+- Export the vault to any zip file, import a pre re backup, or clear all local vault data.
+- About: the installed version and the local-first behaviour.
+
+Clearing local data removes photos, PDFs, notes, reels, chats and your profile. It does not delete Google Drive backups or the PIN, and it does not trigger an automatic backup of the empty vault. You can import a backup afterwards.
+
+## Install
+
+Enable USB debugging on the phone, then:
+
+```powershell
+adb install -r P-Vault.apk
+```
+
+Or copy `P-Vault.apk` to the phone and open it (allow "install unknown apps" for your file manager).
+
+## Limits
+
+- PIN + fingerprint is an app lock, not encryption. The app lock is optional, and screenshots/recents are allowed, so anything visible on screen can be captured. A rooted/forensic device can still read app-private files. Drive backups are plain zips.
+- Chats are local notes in a WhatsApp-style view. There is no messaging or sync. Drive backup is optional and one-way.
+- Uninstalling the app deletes the local vault. Drive backups remain in Google Drive if you made them.
+- Deleting a chat deletes its messages. Deleting all chats does not recreate the default chats.
+- Forgetting the PIN while app lock is on means no way in.
+- Drive backup is one-way and auto-backup runs only while pre re is open. A backup can be interrupted if Android kills the app. Restore adds the backup to the local vault and never removes what is already on the phone. The connected folder keeps the number of P_Vault zips you choose in Settings; use a dedicated folder per phone.
+- Drive backup requires the Google Drive app and a folder you grant access to. If the app is uninstalled or the folder is removed, connect again.
+
+## Package
+
+`com.dudeapp.vault` — version 0.5.44 (versionCode 74).

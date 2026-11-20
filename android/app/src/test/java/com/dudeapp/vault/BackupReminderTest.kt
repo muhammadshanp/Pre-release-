@@ -1,0 +1,204 @@
+package com.dudeapp.vault
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class BackupReminderTest {
+    private val week = 7L * 24 * 60 * 60 * 1000
+    private val now = 1_000_000_000L
+
+    @Test
+    fun firstBackupIsDue() {
+        assertTrue(backupReminderDue(0, 0, now))
+    }
+
+    @Test
+    fun recentBackupIsNotDue() {
+        assertFalse(backupReminderDue(now - week + 1, 0, now))
+    }
+
+    @Test
+    fun weekOldBackupIsDue() {
+        assertTrue(backupReminderDue(now - week, 0, now))
+    }
+
+    @Test
+    fun recentSnoozeIsNotDue() {
+        assertFalse(backupReminderDue(now - week * 2, now - week + 1, now))
+    }
+
+    @Test
+    fun snoozeExpiresAfterAWeek() {
+        assertTrue(backupReminderDue(now - week * 2, now - week, now))
+    }
+
+    @Test
+    fun manualBackupClearsReminder() {
+        assertFalse(backupReminderDue(now - 1, now - week, now))
+    }
+
+    @Test
+    fun customReminderIntervalIsUsed() {
+        val day = 24L * 60 * 60 * 1000
+        assertFalse(backupReminderDue(now - 2 * day, 0, now, 3 * day))
+        assertTrue(backupReminderDue(now - 3 * day, 0, now, 3 * day))
+    }
+
+    @Test
+    fun keepsNewestTwoVaultBackups() {
+        val names = listOf(
+            "P_Vault_20261029_100000_000.zip",
+            "P_Vault_20261029_110000_000.zip",
+            "P_Vault_20261029_120000_000.zip",
+            "Dude_20260101_120000_000.zip",
+            "notes.txt",
+        )
+        assertEquals(
+            setOf("P_Vault_20261029_100000_000.zip"),
+            backupNamesToDelete(names),
+        )
+    }
+
+    @Test
+    fun keepsConfiguredBackupCount() {
+        val names = listOf(
+            "P_Vault_20261029_100000_000.zip",
+            "P_Vault_20261029_110000_000.zip",
+            "P_Vault_20261029_120000_000.zip",
+        )
+        assertEquals(
+            setOf(
+                "P_Vault_20261029_100000_000.zip",
+                "P_Vault_20261029_110000_000.zip",
+            ),
+            backupNamesToDelete(names, keep = 1),
+        )
+    }
+
+    @Test
+    fun sameNamedBackupsAreNotAllDeleted() {
+        // Drive allows several files with one name. Only the surplus copies may go.
+        val files = listOf(
+            BackupFile("a", "P_Vault.zip", 100),
+            BackupFile("b", "P_Vault.zip", 200),
+            BackupFile("c", "P_Vault.zip", 300),
+        )
+        assertEquals(listOf("a"), backupsToDelete(files, keep = 2).map { it.id })
+    }
+
+    @Test
+    fun timestampedBackupsOutrankLegacyNames() {
+        val files = listOf(
+            BackupFile("old1", "P_Vault.zip", 900),
+            BackupFile("new1", "P_Vault_20261113_100000_000.zip", 100),
+            BackupFile("new2", "P_Vault_20261113_110000_000.zip", 200),
+            BackupFile("other", "holiday.zip", 999),
+        )
+        assertEquals(listOf("old1"), backupsToDelete(files, keep = 2).map { it.id })
+    }
+
+    @Test
+    fun theBackupJustWrittenIsNeverDeleted() {
+        val files = listOf(
+            BackupFile("a", "P_Vault_20261113_120000_000.zip", 0),
+            BackupFile("just", "P_Vault_20261113_100000_000.zip", 0),
+        )
+        assertEquals(emptyList<String>(), backupsToDelete(files, keep = 1, protectId = "just").map { it.id })
+    }
+
+    @Test
+    fun connectDriveSuggestionComesBackWeekly() {
+        val day = 24L * 60 * 60 * 1000
+        assertTrue(connectPromptDue(lastAsked = 0L, now = 50 * day))
+        assertFalse(connectPromptDue(lastAsked = 50 * day, now = 53 * day))
+        assertTrue(connectPromptDue(lastAsked = 50 * day, now = 57 * day))
+    }
+
+    @Test
+    fun inboxKeepsNewestFirstAndSurvivesSaving() {
+        var items = emptyList<PushItem>()
+        items = inboxWithNew(items, PushItem("First", "a", 1_000))
+        items = inboxWithNew(items, PushItem("Second", "b", 200_000))
+        // The same message delivered again a moment later is not listed twice.
+        items = inboxWithNew(items, PushItem("Second", "b", 201_000))
+        assertEquals(listOf("Second", "First"), items.map { it.title })
+        assertEquals(items, inboxFromJson(inboxToJson(items)))
+        assertEquals(2, inboxWithNew(items, PushItem("Third", "c", 900_000), limit = 2).size)
+        assertEquals(emptyList<PushItem>(), inboxFromJson("broken"))
+    }
+
+    @Test
+    fun filesCanBeSortedByDateNameAndSize() {
+        val dir = java.nio.file.Files.createTempDirectory("dude-sort").toFile()
+        try {
+            fun item(stamp: Long, title: String, bytes: Int): VaultItem {
+                val file = java.io.File(dir, "${stamp}_$title.txt").apply { writeBytes(ByteArray(bytes)) }
+                return VaultItem(file, title, ItemType.TEXT, stamp)
+            }
+            val items = listOf(item(2, "banana", 5), item(3, "Apple", 50), item(1, "cherry", 500))
+            fun order(sort: SortOrder) = items.sortedFor(sort).map { it.title }
+            assertEquals(listOf("Apple", "banana", "cherry"), order(SortOrder.NEWEST))
+            assertEquals(listOf("cherry", "banana", "Apple"), order(SortOrder.OLDEST))
+            assertEquals(listOf("Apple", "banana", "cherry"), order(SortOrder.NAME_AZ))
+            assertEquals(listOf("cherry", "banana", "Apple"), order(SortOrder.NAME_ZA))
+            assertEquals(listOf("cherry", "Apple", "banana"), order(SortOrder.LARGEST))
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun protectedBackupsArePrunedLikeZips() {
+        val files = listOf(
+            BackupFile("a", "P_Vault_20261029_100000_000.pvault", 1),
+            BackupFile("b", "P_Vault_20261029_110000_000.pvault", 2),
+            BackupFile("c", "P_Vault_20261029_120000_000.pvault", 3),
+            BackupFile("x", "holiday.pvault", 4),
+        )
+        assertEquals(listOf("a"), backupsToDelete(files, keep = 2).map { it.id })
+    }
+
+    @Test
+    fun plainZipsAreRemovedOnceAPasswordIsSet() {
+        val files = listOf(
+            BackupFile("plain1", "P_Vault_20261029_100000_000.zip", 1),
+            BackupFile("plain2", "P_Vault.zip", 2),
+            BackupFile("new", "P_Vault_20261029_120000_000.pvault", 3),
+            BackupFile("other", "Dude_20260101_120000_000.zip", 4),
+        )
+        assertEquals(
+            setOf("plain1", "plain2"),
+            backupsToDelete(files, keep = 2, protectId = "new", dropPlain = true).map { it.id }.toSet(),
+        )
+        // Without a password only the usual count applies: the oldest of the three goes.
+        assertEquals(listOf("plain2"), backupsToDelete(files, keep = 2, protectId = "new").map { it.id })
+    }
+
+    @Test
+    fun olderBackupsGoWhenTheKeptOnesDoNotFitTheLimit() {
+        val gb = 1024L * 1024 * 1024
+        val files = listOf(
+            BackupFile("a", "P_Vault_20261029_100000_000.zip", 1, 2 * gb),
+            BackupFile("b", "P_Vault_20261029_110000_000.zip", 2, 2 * gb),
+            BackupFile("c", "P_Vault_20261029_120000_000.zip", 3, 2 * gb),
+        )
+        // Three may be kept by count, but only two fit in 5 GB.
+        assertEquals(listOf("a"), backupsToDelete(files, keep = 3, limitBytes = 5 * gb).map { it.id })
+        // Everything fits in 6 GB.
+        assertEquals(emptyList<String>(), backupsToDelete(files, keep = 3, limitBytes = 6 * gb).map { it.id })
+        // The newest stays even when it alone is over the limit.
+        assertEquals(setOf("a", "b"), backupsToDelete(files, keep = 3, limitBytes = 1 * gb).map { it.id }.toSet())
+        // No limit: only the count applies.
+        assertEquals(emptyList<String>(), backupsToDelete(files, keep = 3).map { it.id })
+    }
+
+    @Test
+    fun sizesAreShownInPlainUnits() {
+        assertEquals("1.5 GB", sizeLabel(1536L * 1024 * 1024))
+        assertEquals("340 MB", sizeLabel(340L * 1024 * 1024))
+        assertEquals("2.5 MB", sizeLabel(2_621_440L))
+        assertEquals("under 0.1 MB", sizeLabel(10_000L))
+    }
+}
