@@ -87,304 +87,47 @@ data class ThemePreset(
 
         /** Every look inside this build, in the order the theme page shows them. */
         val all: List<ThemePreset>
-            get() = listOf(WHITE, DARK, NIGHTFALL, MOONLIT, MIDNIGHT, RACING, GRAND_LINE, SHINOBI, SAKURA, FOREST, GOLD, MINIMAL, NEON, OCEAN)
+            get() = listOf(WHITE, DARK)
 
+        /**
+         * The design's light: black ink on white, a #E0E0E0 hairline, one real red for
+         * mistakes. Nothing decorative — no accent hue, no gradient, no picture.
+         */
         val WHITE = ThemePreset(
         label = "Light",
         dark = false,
-        primary = Color(0xFFD9512A),
+        primary = Color(0xFF000000),
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFFFE6DC),
-        onPrimaryContainer = Color(0xFF8A2C0E),
-        secondary = Color(0xFFB23E17),
-        background = Color(0xFFF4F5F7),
+        primaryContainer = Color(0xFFF2F2F3),
+        onPrimaryContainer = Color(0xFF000000),
+        secondary = Color(0xFF000000),
+        background = Color(0xFFFFFFFF),
         surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFECEEF2),
-        onBackground = Color(0xFF12141A),
-        onSurfaceVariant = Color(0xFF5B616E),
-        outline = Color(0xFFE1E4EA),
+        surfaceVariant = Color(0xFFF4F4F5),
+        onBackground = Color(0xFF000000),
+        onSurfaceVariant = Color(0xFF828282),
+        outline = Color(0xFFE0E0E0),
         error = Color(0xFFC62828),
         )
 
+        /** The same design at night: #F5F5F7 ink on #0C0D10, the same hairlines. */
         val DARK = ThemePreset(
         label = "Dark",
         dark = true,
-        primary = Color(0xFFFF7A4D),
-        onPrimary = Color(0xFF1F0D06),
-        primaryContainer = Color(0xFF3B2016),
-        onPrimaryContainer = Color(0xFFFFB59B),
-        secondary = Color(0xFFF08A66),
+        primary = Color(0xFFF5F5F7),
+        onPrimary = Color(0xFF0C0D10),
+        primaryContainer = Color(0xFF1F1F23),
+        onPrimaryContainer = Color(0xFFF5F5F7),
+        secondary = Color(0xFFF5F5F7),
         background = Color(0xFF0C0D10),
-        surface = Color(0xFF17191E),
-        surfaceVariant = Color(0xFF23262D),
-        onBackground = Color(0xFFF2F3F5),
-        onSurfaceVariant = Color(0xFF9EA4B0),
-        outline = Color(0xFF2B2F38),
+        surface = Color(0xFF16161A),
+        surfaceVariant = Color(0xFF232327),
+        onBackground = Color(0xFFF5F5F7),
+        onSurfaceVariant = Color(0xFF9A9AA0),
+        outline = Color(0xFF2E2E33),
         error = Color(0xFFFF6B6B),
         )
 
-        val MIDNIGHT = ThemePreset(
-        label = "Midnight",
-        dark = true,
-        primary = Color(0xFF7C6BFF),
-        onPrimary = Color(0xFF0A0820),
-        primaryContainer = Color(0xFF241F52),
-        onPrimaryContainer = Color(0xFFCBC2FF),
-        secondary = Color(0xFF5B7BFF),
-        background = Color(0xFF08080F),
-        surface = Color(0xFF12121C),
-        surfaceVariant = Color(0xFF1D1D2A),
-        onBackground = Color(0xFFF1F1F7),
-        onSurfaceVariant = Color(0xFFA0A0B4),
-        outline = Color(0xFF26263A),
-        error = Color(0xFFFF6B6B),
-        special = true,
-        gradient = listOf(Color(0xFF6C4BFF), Color(0xFF1B1038)),
-        glow = Color(0xFF4B33D6),
-        backdrop = BackdropStyle.Picture(R.drawable.bg_animegirl, scrim = 0.45f),
-        )
-
-        val RACING = ThemePreset(
-        label = "Racing",
-        dark = true,
-        primary = Color(0xFFE10600),
-        onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFF3A0705),
-        onPrimaryContainer = Color(0xFFFFB3AD),
-        secondary = Color(0xFFFF3B30),
-        background = Color(0xFF050505),
-        surface = Color(0xFF101012),
-        surfaceVariant = Color(0xFF1A1A1D),
-        onBackground = Color(0xFFF4F4F6),
-        onSurfaceVariant = Color(0xFFA2A2AA),
-        outline = Color(0xFF26262B),
-        error = Color(0xFFFF5A4D),
-        special = true,
-        gradient = listOf(Color(0xFFE10600), Color(0xFF1A0100)),
-        glow = Color(0xFFE10600),
-        backdrop = BackdropStyle.Picture(R.drawable.bg_grandprix, scrim = 0.35f),
-        )
-
-        val GRAND_LINE = ThemePreset(
-        label = "Grand Line",
-        dark = true,
-        primary = Color(0xFFFFC53D),
-        onPrimary = Color(0xFF241A00),
-        primaryContainer = Color(0xFF3B2A05),
-        onPrimaryContainer = Color(0xFFFFE1A0),
-        secondary = Color(0xFFE5484D),
-        background = Color(0xFF0B0806),
-        surface = Color(0xFF171210),
-        surfaceVariant = Color(0xFF221B17),
-        onBackground = Color(0xFFF8F2EA),
-        onSurfaceVariant = Color(0xFFAF9F92),
-        outline = Color(0xFF302520),
-        error = Color(0xFFFF6B5E),
-        special = true,
-        gradient = listOf(Color(0xFFE5484D), Color(0xFF2A0A06)),
-        glow = Color(0xFFB3261E),
-        backdrop = BackdropStyle.Picture(R.drawable.bg_strawhat, scrim = 0.4f),
-        )
-
-        val SHINOBI = ThemePreset(
-        label = "Shinobi",
-        dark = true,
-        primary = Color(0xFFFF8A1F),
-        onPrimary = Color(0xFF201000),
-        primaryContainer = Color(0xFF3D2008),
-        onPrimaryContainer = Color(0xFFFFC98A),
-        secondary = Color(0xFF4C7DFF),
-        background = Color(0xFF08090C),
-        surface = Color(0xFF121418),
-        surfaceVariant = Color(0xFF1C1F25),
-        onBackground = Color(0xFFF3F4F7),
-        onSurfaceVariant = Color(0xFF9CA1AC),
-        outline = Color(0xFF272B33),
-        error = Color(0xFFFF6B5E),
-        special = true,
-        gradient = listOf(Color(0xFFFF8A1F), Color(0xFF2A1400)),
-        glow = Color(0xFFC25A00),
-        backdrop = BackdropStyle.Picture(R.drawable.bg_ninja, scrim = 0.4f),
-        )
-
-        val SAKURA = ThemePreset(
-        label = "Sakura",
-        dark = false,
-        primary = Color(0xFFD6336C),
-        onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFFFE3EC),
-        onPrimaryContainer = Color(0xFF7A1738),
-        secondary = Color(0xFFB02A5B),
-        background = Color(0xFFFDF5F8),
-        surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFF7E8EE),
-        onBackground = Color(0xFF1D1418),
-        onSurfaceVariant = Color(0xFF7A6670),
-        outline = Color(0xFFEFD9E2),
-        error = Color(0xFFC0392B),
-        special = true,
-        gradient = listOf(Color(0xFFF06A9B), Color(0xFFE8457A)),
-        glow = Color(0xFFF2A7C3),
-        )
-
-        val FOREST = ThemePreset(
-        label = "Forest",
-        dark = true,
-        primary = Color(0xFF34C77B),
-        onPrimary = Color(0xFF04180D),
-        primaryContainer = Color(0xFF0E3521),
-        onPrimaryContainer = Color(0xFFB6F2D0),
-        secondary = Color(0xFF7BD389),
-        background = Color(0xFF07100B),
-        surface = Color(0xFF0F1A13),
-        surfaceVariant = Color(0xFF17251B),
-        onBackground = Color(0xFFEFF6F1),
-        onSurfaceVariant = Color(0xFF97AC9D),
-        outline = Color(0xFF1F2E24),
-        error = Color(0xFFFF6B6B),
-        special = true,
-        gradient = listOf(Color(0xFF2FB86F), Color(0xFF0B2A18)),
-        glow = Color(0xFF1E7A47),
-        )
-
-        val GOLD = ThemePreset(
-        label = "Gold",
-        dark = true,
-        primary = Color(0xFFE3B341),
-        onPrimary = Color(0xFF1C1500),
-        primaryContainer = Color(0xFF3A2E08),
-        onPrimaryContainer = Color(0xFFFFE7A3),
-        secondary = Color(0xFFD4A017),
-        background = Color(0xFF0A0A0A),
-        surface = Color(0xFF141414),
-        surfaceVariant = Color(0xFF1E1C17),
-        onBackground = Color(0xFFF6F4EF),
-        onSurfaceVariant = Color(0xFFA9A395),
-        outline = Color(0xFF2A2722),
-        error = Color(0xFFFF6B5E),
-        special = true,
-        gradient = listOf(Color(0xFFD9A83A), Color(0xFF6B4E10)),
-        glow = Color(0xFF8A6A1E),
-        )
-
-        val MINIMAL = ThemePreset(
-        label = "Minimal",
-        dark = false,
-        primary = Color(0xFF141414),
-        onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFEDEDED),
-        onPrimaryContainer = Color(0xFF141414),
-        secondary = Color(0xFF3D3D3D),
-        background = Color(0xFFFBFBFB),
-        surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFF1F1F1),
-        onBackground = Color(0xFF171717),
-        onSurfaceVariant = Color(0xFF767676),
-        outline = Color(0xFFE8E8E8),
-        error = Color(0xFFB3261E),
-        special = true,
-        gradient = listOf(Color(0xFF2B2B2B), Color(0xFF0E0E0E)),
-        glow = Color(0xFF9E9E9E),
-        )
-
-        val NEON = ThemePreset(
-        label = "Neon",
-        dark = true,
-        primary = Color(0xFF00E5FF),
-        onPrimary = Color(0xFF001418),
-        primaryContainer = Color(0xFF04323A),
-        onPrimaryContainer = Color(0xFFA6F4FF),
-        secondary = Color(0xFFFF2BD6),
-        background = Color(0xFF07030E),
-        surface = Color(0xFF120A1E),
-        surfaceVariant = Color(0xFF1C1030),
-        onBackground = Color(0xFFF6F0FF),
-        onSurfaceVariant = Color(0xFFAF9ECC),
-        outline = Color(0xFF2A1B45),
-        error = Color(0xFFFF5C7A),
-        special = true,
-        gradient = listOf(Color(0xFFFF2BD6), Color(0xFF1B0B3A)),
-        glow = Color(0xFFCE00AE),
-        )
-
-        val OCEAN = ThemePreset(
-        label = "Ocean",
-        dark = true,
-        primary = Color(0xFF2EC4D6),
-        onPrimary = Color(0xFF00171A),
-        primaryContainer = Color(0xFF073038),
-        onPrimaryContainer = Color(0xFFA8EEF6),
-        secondary = Color(0xFF3B82F6),
-        background = Color(0xFF050C12),
-        surface = Color(0xFF0E1720),
-        surfaceVariant = Color(0xFF14222E),
-        onBackground = Color(0xFFEEF5F9),
-        onSurfaceVariant = Color(0xFF93A8B6),
-        outline = Color(0xFF1B2A36),
-        error = Color(0xFFFF6B6B),
-        special = true,
-        gradient = listOf(Color(0xFF1C9EC9), Color(0xFF062A45)),
-        glow = Color(0xFF0F6E8C),
-        )
-
-        /** The look of the reference picture: violet night, glassy cards, artwork in the hero. */
-        val MOONLIT = ThemePreset(
-        label = "Moonlit",
-        adminOnly = true,
-        dark = true,
-        primary = Color(0xFF8B5CF6),
-        onPrimary = Color(0xFF120B2A),
-        primaryContainer = Color(0xFF2A1B52),
-        onPrimaryContainer = Color(0xFFD5C8FF),
-        secondary = Color(0xFFA78BFA),
-        background = Color(0xFF08060F),
-        surface = Color(0xFF121020),
-        surfaceVariant = Color(0xFF1D1A2E),
-        onBackground = Color(0xFFF2EFFA),
-        onSurfaceVariant = Color(0xFFA79FBF),
-        outline = Color(0xFF2A2540),
-        error = Color(0xFFFF6B6B),
-        special = true,
-        gradient = listOf(Color(0xFF6D28D9), Color(0xFF2A1052)),
-        glow = Color(0xFF7C3AED),
-        backdrop = BackdropStyle.Picture(R.drawable.bg_moonlit, scrim = 0.5f),
-        heroArt = true,
-        glass = true,
-        tileTints = true,
-        )
-
-        /**
-         * The first advanced look: a moon over pines behind the screen, and a separate
-         * picture inside every card. The admin gives it to an address by hand, one at a time.
-         */
-        val NIGHTFALL = ThemePreset(
-        label = "Nightfall",
-        dark = true,
-        primary = Color(0xFF9F7BFF),
-        onPrimary = Color(0xFF14092E),
-        primaryContainer = Color(0xFF2E1B57),
-        onPrimaryContainer = Color(0xFFDCCFFF),
-        secondary = Color(0xFFB79CFF),
-        background = Color(0xFF09060F),
-        surface = Color(0xFF14101F),
-        surfaceVariant = Color(0xFF1E1830),
-        onBackground = Color(0xFFF3EFFA),
-        onSurfaceVariant = Color(0xFFA9A0C0),
-        outline = Color(0xFF2B2440),
-        error = Color(0xFFFF6B6B),
-        special = true,
-        gradient = listOf(Color(0xFF7C3AED), Color(0xFF3B1069)),
-        glow = Color(0xFF8B5CF6),
-        backdrop = BackdropStyle.Picture(R.drawable.adv_bg, scrim = 0.42f),
-        glass = true,
-        cardPictures = mapOf(
-        CardPicture.HERO to R.drawable.adv_hero,
-        CardPicture.PHOTOS to R.drawable.adv_photos,
-        CardPicture.PDFS to R.drawable.adv_pdfs,
-        CardPicture.NOTES to R.drawable.adv_notes,
-        CardPicture.REELS to R.drawable.adv_reels,
-        ),
-        )
     }
 }
 
@@ -527,163 +270,28 @@ private val VaultTypography = Typography(
 
 /** Rounder corners everywhere: text fields, chips, menus, dialogs and sheets. */
 private val VaultShapes = Shapes(
-    extraSmall = RoundedCornerShape(12.dp),
-    small = RoundedCornerShape(14.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(12.dp),
+    extraLarge = RoundedCornerShape(20.dp),
 )
 
 /**
- * The app background. A plain colour for Light and Dark; a picture behind a dark wash for
- * the special looks, so text and cards stay readable on top of it.
+ * The page behind every screen. The design is flat, so this is the theme's own background
+ * and nothing else — no picture, no gradient, no wash.
  */
 @Composable
 fun Backdrop() {
-    val preset = LocalThemePreset.current
-    val downloadedThemes = LocalDownloadedThemes.current
-    val context = LocalContext.current
-    // The whole background is one choice: the theme's own backdrop, or one image of the
-    // user's. While an image is chosen the theme only supplies the colours on top of it.
-    val ownImage = CardPhotoFiles.background.value
-    if (ownImage != null) {
-        val picture = remember(ownImage) {
-            runCatching {
-                val full = android.graphics.BitmapFactory.decodeFile(ownImage.absolutePath)
-                val small = android.graphics.Bitmap.createScaledBitmap(
-                    full,
-                    (full.width / 2).coerceAtLeast(1),
-                    (full.height / 2).coerceAtLeast(1),
-                    true,
-                )
-                small.asImageBitmap()
-            }.getOrNull()
-        }
-        Box(Modifier.fillMaxSize()) {
-            if (picture != null) {
-                Image(
-                    bitmap = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-            }
-            // The same wash as a picture look, so text and cards stay readable on it.
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = 0.42f),
-                            0.45f to preset.background.copy(alpha = 0.6f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
-        }
-        return
-    }
-    when (val style = preset.backdrop) {
-        is BackdropStyle.Plain -> Box(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        )
-
-        is BackdropStyle.Remote -> {
-            val theme = downloadedThemes.firstOrNull { it.pictureUrl == style.url }
-            val file = theme?.let { ThemeCatalogue(context).picture(it) }
-            // Only the top of the picture is washed out, so the hero card and the section
-            // rows below it can be read; further down the cards are dark enough already.
-            if (file != null) {
-                Box(Modifier.fillMaxSize()) {
-                    RemoteBackdrop(picture = file, scrimColor = Color.Transparent, scrim = 0f)
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to preset.background.copy(alpha = style.scrim + 0.15f),
-                                    0.32f to preset.background.copy(alpha = style.scrim * 0.6f),
-                                    0.55f to preset.background.copy(alpha = 0.25f),
-                                    0.75f to preset.background.copy(alpha = 0.45f),
-                                    1f to preset.background.copy(alpha = 0.7f),
-                                ),
-                            ),
-                    )
-                }
-            } else {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
-                )
-            }
-        }
-
-        is BackdropStyle.LocalFile -> Box(Modifier.fillMaxSize()) {
-            val picture = remember(style.file) {
-                android.graphics.BitmapFactory.decodeFile(style.file.absolutePath)
-                    ?.let { android.graphics.Bitmap.createScaledBitmap(it, it.width / 2, it.height / 2, true) }
-                    ?.asImageBitmap()
-            }
-            if (picture != null) {
-                Image(
-                    bitmap = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-            }
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = style.scrim),
-                            0.45f to preset.background.copy(alpha = style.scrim + 0.18f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
-        }
-
-        is BackdropStyle.Picture -> Box(Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(style.image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = style.scrim),
-                            0.45f to preset.background.copy(alpha = style.scrim + 0.18f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
-        }
-    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    )
 }
-
-/**
- * The card photos of a theme made on this phone, provided to every card the same way the
- * chosen card photos are. A theme from the catalogue uses resources instead, which need no
- * provider.
- */
-val LocalThemeCards = compositionLocalOf<Map<CardPicture, java.io.File>> { emptyMap() }
 
 /** The active look, for the few places that need more than the colours (backdrop, glow). */
 val LocalThemePreset = compositionLocalOf { ThemePreset.WHITE }
 
 
 /** Every look downloaded from the theme catalogue, so pictures can be found by address. */
-val LocalDownloadedThemes = compositionLocalOf<List<DownloadedTheme>> { emptyList() }

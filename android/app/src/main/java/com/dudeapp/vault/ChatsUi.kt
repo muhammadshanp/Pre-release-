@@ -701,7 +701,10 @@ fun ChatScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "On this phone",
+                        text = remember {
+                            context.getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
+                                .getString("claimed_name", null)
+                        }?.let { "@$it" } ?: "On this phone",
                         color = preColors.ink.copy(alpha = 0.5f),
                         fontSize = 12.sp,
                         maxLines = 1,
