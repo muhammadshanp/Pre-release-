@@ -95,6 +95,50 @@ private val DarkPreRe = PreReColors(
 internal fun preReColors(): PreReColors =
     if (MaterialTheme.colorScheme.background.luminance() < 0.5f) DarkPreRe else LightPreRe
 
+/**
+ * The chat footer field from the design: 40dp tall, 8dp corners, a 1dp #E0E0E0 hairline,
+ * 14sp text, and it grows to four lines without the border changing weight. Built on
+ * BasicTextField so the composer isn't boxed in by Material's minimum height and padding.
+ */
+@Composable
+internal fun PreReChatField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
+    val colors = preReColors()
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = enabled,
+        maxLines = 4,
+        textStyle = TextStyle(color = colors.ink, fontSize = 14.sp, lineHeight = 20.sp),
+        cursorBrush = SolidColor(colors.ink),
+        modifier = modifier,
+        decorationBox = { field ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 40.dp)
+                    .clip(PreReControlShape)
+                    .background(colors.field)
+                    .border(1.dp, colors.border, PreReControlShape)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) {
+                        Text(placeholder, color = colors.muted, fontSize = 14.sp)
+                    }
+                    field()
+                }
+            }
+        },
+    )
+}
+
 /** 8dp everywhere in the design's controls: fields, buttons, cards. */
 internal val PreReControlShape = RoundedCornerShape(8.dp)
 

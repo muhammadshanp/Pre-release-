@@ -69,7 +69,6 @@ import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -895,30 +894,41 @@ fun ChatScreen(
                 }
             }
 
+            // The design's footer: a hairline rule, then field and actions on one 40dp line.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(preColors.divider),
+            )
             Row(
                 Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.Bottom,
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (editing == null) {
-                    IconButton(
+                    ComposerIcon(
+                        icon = Icons.Outlined.Image,
+                        description = "Share a photo",
+                        enabled = !recording,
                         onClick = {
                             onExternal()
                             photoPicker.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                             )
                         },
-                        enabled = !recording,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Image,
-                            contentDescription = "Share a photo",
-                            modifier = Modifier.size(22.dp),
-                        )
-                    }
-                    IconButton(
+                    )
+                    ComposerIcon(
+                        icon = if (recording) Icons.Default.Stop else Icons.Outlined.Mic,
+                        description = if (recording) {
+                            "Stop and send voice note"
+                        } else {
+                            "Record a voice note"
+                        },
+                        enabled = !sending,
+                        tint = if (recording) MaterialTheme.colorScheme.error else null,
                         onClick = {
                             when {
                                 recording -> stopRecording(true)
@@ -927,40 +937,27 @@ fun ChatScreen(
                                 else -> micPermission.launch(Manifest.permission.RECORD_AUDIO)
                             }
                         },
-                        enabled = !sending,
-                    ) {
-                        Icon(
-                            imageVector = if (recording) Icons.Default.Stop else Icons.Outlined.Mic,
-                            contentDescription = if (recording) {
-                                "Stop and send voice note"
-                            } else {
-                                "Record a voice note"
-                            },
-                            tint = if (recording) {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                            modifier = Modifier.size(22.dp),
-                        )
-                    }
+                    )
+                    Spacer(Modifier.width(4.dp))
                 }
-                OutlinedTextField(
+                PreReChatField(
                     value = draft,
                     onValueChange = { draft = it },
-                    placeholder = { Text(if (editing != null) "Edit message" else "Message...") },
-                    maxLines = 4,
+                    placeholder = if (editing != null) "Edit message" else "Message...",
                     enabled = !recording,
-                    shape = PreReControlShape,
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(focusRequester),
                 )
                 Spacer(Modifier.width(8.dp))
-                FilledIconButton(
-                    onClick = { send() },
-                    enabled = draft.isNotBlank() && !sending && !recording,
-                    modifier = Modifier.size(48.dp),
+                val canSend = draft.isNotBlank() && !sending && !recording
+                Box(
+                    Modifier
+                        .size(36.dp)
+                        .clip(PreReControlShape)
+                        .background(if (canSend) preColors.primaryFill else preColors.border)
+                        .clickable(enabled = canSend) { send() },
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = if (editing != null) {
@@ -969,6 +966,8 @@ fun ChatScreen(
                             Icons.AutoMirrored.Filled.Send
                         },
                         contentDescription = if (editing != null) "Save edit" else "Send",
+                        tint = if (canSend) preColors.onPrimaryFill else preColors.muted,
+                        modifier = Modifier.size(18.dp),
                     )
                 }
             }
@@ -1279,6 +1278,32 @@ private fun dayLabel(context: android.content.Context, stamp: Long): String {
             context,
             stamp,
             DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL,
+        )
+    }
+}
+
+/** A composer action: 36dp tap target, 20dp glyph, ink at 70% unless told otherwise. */
+@Composable
+private fun ComposerIcon(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    enabled: Boolean,
+    tint: Color? = null,
+    onClick: () -> Unit,
+) {
+    val colors = preReColors()
+    Box(
+        Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            tint = tint ?: colors.ink.copy(alpha = if (enabled) 0.7f else 0.25f),
+            modifier = Modifier.size(20.dp),
         )
     }
 }
