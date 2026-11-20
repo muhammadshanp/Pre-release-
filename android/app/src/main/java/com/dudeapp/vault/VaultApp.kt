@@ -284,19 +284,6 @@ fun VaultApp(
     // What this account may do: its level, its switches and the looks shared with it.
     var access by remember { mutableStateOf(AccessStore(context).access()) }
     val specialAccess = access.theme
-    var themesOpen by remember { mutableStateOf(false) }
-    var advancedThemesOpen by remember { mutableStateOf(false) }
-    var bundlesOpen by remember { mutableStateOf(false) }
-    // A theme made on this phone, if one is being worn. Advanced off means none is.
-    val ownTheme = Bundles.worn
-    val bundlesStore = remember { BundleStore(context) }
-    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { Bundles.publish(bundlesStore) } }
-    // The photos this phone chose for its cards, one per card at most.
-    val cardPhotos = remember { CardPhotoStore(context) }
-    // Read as state, so a card redraws the moment its photo is chosen or removed.
-    val photoFiles by CardPhotoFiles.current
-    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { cardPhotos.publish() } }
-
     val themeStore = remember { ThemeStore(context) }
     // Looks that arrive from the theme catalogue, without a new app build.
     val catalogue = remember { ThemeCatalogue(context) }
@@ -339,10 +326,6 @@ fun VaultApp(
     var restorePrompt by remember { mutableStateOf(false) }
     val settingsStore = remember { SettingsStore(context) }
     var settings by remember { mutableStateOf(settingsStore.load()) }
-    // With advanced mode off no card photo is shown at all, so the cards go back to the
-    // pictures the chosen theme gives them.
-    val advancedPhotos: Map<CardPicture, File> =
-        if (settings.advancedMode) photoFiles else emptyMap()
     var settingsOpen by remember { mutableStateOf(false) }
 
     fun presentUpdate(latest: AppUpdate) {
@@ -1161,7 +1144,6 @@ fun VaultApp(
     val chatDetail = openChat
     BackHandler(
         enabled = detail == null && chatDetail == null && !settingsOpen && !adminOpen && !inboxOpen &&
-            !themesOpen && !advancedThemesOpen && !bundlesOpen &&
             (searchOpen || query.isNotBlank() || selecting || tab != Tab.HOME || reelFilter != null),
     ) {
         when {
@@ -1191,109 +1173,16 @@ fun VaultApp(
             onAdminChanged = { isAdmin = AdminStore(context).isAdmin() },
             onBack = { adminOpen = false },
         )
-    } else if (advancedThemesOpen) {
-        AdvancedThemesScreen(
-            theme = theme,
-            access = access.copy(admin = isAdmin),
-            photos = advancedPhotos,
-            onPhoto = { kind, uri ->
-                if (uri != null) {
-                    scope.launch {
-                        if (cardPhotos.save(kind, uri)) {
-                            cardPhotos.publish()
-                        } else {
-                            Toast.makeText(context, "Could not save that photo", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            },
-            onClearPhoto = { kind ->
-                cardPhotos.clear(kind)
-                cardPhotos.publish()
-            },
-            // The whole background: one image, or back to the theme's own.
-            onBackground = { uri ->
-                if (uri != null) {
-                    scope.launch {
-                        if (cardPhotos.saveBackground(uri)) {
-                            cardPhotos.publish()
-                        } else {
-                            Toast.makeText(context, "Could not save that image", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            },
-            onClearBackground = {
-                cardPhotos.clearBackground()
-                cardPhotos.publish()
-            },
-            bundlesOpen = bundlesOpen,
-            onBundles = { bundlesOpen = it },
-            onOpenBundles = {
-                bundlesOpen = true
-            },
-            onPick = onThemeChange,
-            onBack = { advancedThemesOpen = false },
-        )
-    } else if (themesOpen) {
-        ThemesScreen(
-            theme = theme,
-            access = access.copy(admin = isAdmin),
-            // The switch is on the Theme page itself, so advanced mode is turned on and off
-            // where the Advanced page lives.
-            advancedOn = settings.advancedMode,
-            onAdvancedChange = { on ->
-                settings = settings.copy(advancedMode = on)
-                settingsStore.save(settings)
-                // Advanced off switches the advanced things themselves off, not just their
-                // screens: the theme's own background and cards come back for the whole app.
-                Bundles.advancedOn.value = on
-                cardPhotos.publish()
-                if (!on) {
-                    // Leaving also closes the pages the switch hides.
-                    advancedThemesOpen = false
-                    bundlesOpen = false
-                }
-            },
-            catalogThemes = catalogThemes.filter {
-                it.isAllowedFor(GoogleAccountStore(context).email(), access.theme, access)
-            },
-            refreshing = catalogRefreshing,
-            catalogueProblem = catalogProblem,
-            onRefresh = { loadCatalogue(lookOnline = true) },
-            onPick = onThemeChange,
-            // The advanced looks are the admin's own; everyone else does not see the page.
-            onAdvanced = {
-                if (access.copy(admin = isAdmin).advanced && settings.advancedMode) {
-                    themesOpen = false
-                    advancedThemesOpen = true
-                }
-            },
-            advancedInUse = Bundles.applied.value != null || CardPhotoFiles.current.value.isNotEmpty() || CardPhotoFiles.background.value != null,
-            onBack = { themesOpen = false },
-        )
     } else if (settingsOpen) {
         SettingsScreen(
             theme = theme,
             settings = settings,
             update = availableUpdate,
-            access = access,
             onTheme = onThemeChange,
-            onThemes = {
-                settingsOpen = false
-                themesOpen = true
-            },
             onSettings = { next ->
                 val autoWasOff = !settings.autoBackup
-                val advancedChanged = next.advancedMode != settings.advancedMode
                 settings = next
                 settingsStore.save(next)
-                // The switch here and the one on the Theme page are the same setting, so
-                // advanced off sets the advanced look aside from either place.
-                if (advancedChanged) {
-                    Bundles.advancedOn.value = next.advancedMode
-                    cardPhotos.publish()
-                }
                 if (next.appLock && !Auth.hasPin(context)) onPinSetup()
                 if (autoWasOff && next.autoBackup && driveStore.hasPending()) {
                     autoBackupTick += 1
@@ -1372,8 +1261,6 @@ fun VaultApp(
                     onSettings = { closeMenu { settingsOpen = true } },
                     isAdmin = isAdmin,
                     onAdmin = { closeMenu { adminOpen = true } },
-                    canTheme = access.theme,
-                    onThemes = { closeMenu { themesOpen = true } },
                     signedIn = signedIn,
                     onSignIn = { closeMenu { adminOpen = true } },
                     onBackup = { closeMenu { backupNow() } },
@@ -1945,28 +1832,6 @@ fun VaultApp(
                     // on screen is always what is saved rather than a leftover draft.
                     name = profile.name,
                     avatar = profile.avatar,
-                    signedIn = signedIn,
-                    namesFixed = namesFixed,
-                    username = usernameStore.saved().orEmpty(),
-                    usernameConfirmed = usernameStore.confirmed(),
-                    onChangeUsername = { wanted, token ->
-                        when (val check = claimUsername(context, wanted, token)) {
-                            is NameCheck.Free -> {
-                                // The name held before this one is handed back, so it does not
-                                // stay taken by an account that no longer uses it.
-                                val old = usernameStore.saved()
-                                if (old != null && old != check.name) {
-                                    releaseOldUsername(context, old, token)
-                                }
-                                null
-                            }
-                            is NameCheck.Refused -> nameProblemText(check.problem)
-                            is NameCheck.Unconfirmed -> {
-                                usernameStore.save(check.name, false)
-                                check.reason
-                            }
-                        }
-                    },
                     drive = drive,
                     onPickPhoto = {
                         onExternal()
@@ -2991,8 +2856,6 @@ private fun MenuDrawer(
     onSettings: () -> Unit,
     isAdmin: Boolean,
     onAdmin: () -> Unit,
-    canTheme: Boolean,
-    onThemes: () -> Unit,
     /** A Google account is signed in on this phone. */
     signedIn: Boolean,
     /** Starts Google's own sign-in screen for the admin panel. */
@@ -3025,8 +2888,6 @@ private fun MenuDrawer(
         Spacer(Modifier.height(10.dp))
         MenuDrawerItem(Icons.Outlined.Person, "Profile", onProfile)
         MenuDrawerItem(Icons.Outlined.Settings, "Settings", onSettings)
-        // The Theme page itself is for everyone; only its picture looks need special access.
-        MenuDrawerItem(Icons.Outlined.Palette, "Theme", onThemes)
         if (!signedIn) {
             MenuDrawerItem(Icons.Outlined.Login, "Sign in with Google", onSignIn)
         }

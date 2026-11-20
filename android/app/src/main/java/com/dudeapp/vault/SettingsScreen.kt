@@ -92,9 +92,7 @@ fun SettingsScreen(
     theme: ThemePreset,
     settings: AppSettings,
     update: AppUpdate?,
-    access: MyAccess,
     onTheme: (ThemePreset) -> Unit,
-    onThemes: () -> Unit,
     onSettings: (AppSettings) -> Unit,
     onUpdate: () -> Unit,
     backupProtected: Boolean,
@@ -221,41 +219,6 @@ fun SettingsScreen(
                             )
                         }
                     }
-                    // The picture themes live on their own page; it is in the menu for
-                    // people with special access, and reachable from here too.
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable(onClick = onThemes)
-                            .padding(horizontal = Spacing.Screen, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Outlined.Palette,
-                            contentDescription = null,
-                            tint = TextSoft,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text("More themes", fontSize = 15.sp, fontWeight = FontWeight.Medium)
-                            Text(
-                                if (access.theme) {
-                                    "Picture themes: Grand Line, Racing, Shinobi and more."
-                                } else {
-                                    "Picture themes are locked. Ask the admin for special access."
-                                },
-                                color = TextSoft,
-                                fontSize = 12.sp,
-                            )
-                        }
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = TextSoft,
-                        )
-                    }
                 }
 
                 SettingsGroup("Photos and PDFs") {
@@ -275,27 +238,6 @@ fun SettingsScreen(
                             )
                         },
                     )
-                }
-
-                if (access.advanced) {
-                    SettingsGroup("Themes") {
-                        SettingsItem(
-                            icon = Icons.Outlined.Palette,
-                            tint = Accent.Reel,
-                            title = "Advanced mode",
-                            subtitle = if (settings.advancedMode) {
-                                "The Advanced page and bundles are in the Theme page."
-                            } else {
-                                "Hidden: the theme's own background and cards are used."
-                            },
-                            trailing = {
-                                OnOffSwitch(
-                                    checked = settings.advancedMode,
-                                    onCheckedChange = { onSettings(settings.copy(advancedMode = it)) },
-                                )
-                            },
-                        )
-                    }
                 }
 
                 SettingsGroup("Security") {
