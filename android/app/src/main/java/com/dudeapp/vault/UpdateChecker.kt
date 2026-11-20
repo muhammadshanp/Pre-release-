@@ -7,8 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
-private const val UPDATE_REPO = "muhammadshanp/p-vault"
-private const val APK_URL = "https://github.com/muhammadshanp/p-vault/releases/latest/download/P-Vault.apk"
+private const val UPDATE_REPO = "muhammadshanp/Pre-release-"
+private const val APK_URL = "https://github.com/muhammadshanp/Pre-release-/releases/latest/download/pre-re.apk"
 
 data class AppUpdate(val version: String, val url: String)
 
@@ -20,7 +20,7 @@ suspend fun checkForUpdate(currentVersion: String): AppUpdate? = withContext(Dis
         connection.connectTimeout = 5_000
         connection.readTimeout = 5_000
         connection.setRequestProperty("Accept", "application/vnd.github+json")
-        connection.setRequestProperty("User-Agent", "PVault")
+        connection.setRequestProperty("User-Agent", "pre-re")
         try {
             if (connection.responseCode != 200) return@runCatching null
             val json = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
@@ -36,7 +36,7 @@ suspend fun checkForUpdate(currentVersion: String): AppUpdate? = withContext(Dis
 }
 
 internal fun updatePageUrl(currentVersion: String): String =
-    "https://muhammadshanp.github.io/p-vault-website/update.html?v=${URLEncoder.encode(currentVersion, "UTF-8")}"
+    "https://github.com/muhammadshanp/Pre-release-/releases/tag/v${URLEncoder.encode(currentVersion, "UTF-8")}"
 
 /** Direct APK download from the release; falls back to the /latest/download link. */
 internal fun apkDownloadUrl(json: JSONObject): String {

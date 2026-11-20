@@ -7,9 +7,9 @@ import org.junit.Test
 
 class UpdateCheckerTest {
     @Test
-    fun passesInstalledVersionToTheUpdatePage() {
+    fun passesInstalledVersionToTheReleaseNotes() {
         assertEquals(
-            "https://muhammadshanp.github.io/p-vault-website/update.html?v=0.4.2",
+            "https://github.com/muhammadshanp/Pre-release-/releases/tag/v0.4.2",
             updatePageUrl("0.4.2"),
         )
     }
@@ -19,11 +19,11 @@ class UpdateCheckerTest {
         val json = org.json.JSONObject(
             """{"tag_name":"v0.4.2","assets":[
                {"name":"notes.txt","browser_download_url":"https://example.com/notes.txt"},
-               {"name":"P-Vault.apk","browser_download_url":"https://example.com/P-Vault.apk"}]}""",
+               {"name":"pre-re.apk","browser_download_url":"https://example.com/pre-re.apk"}]}""",
         )
-        assertEquals("https://example.com/P-Vault.apk", apkDownloadUrl(json))
+        assertEquals("https://example.com/pre-re.apk", apkDownloadUrl(json))
         assertEquals(
-            "https://github.com/muhammadshanp/p-vault/releases/latest/download/P-Vault.apk",
+            "https://github.com/muhammadshanp/Pre-release-/releases/latest/download/pre-re.apk",
             apkDownloadUrl(org.json.JSONObject("""{"tag_name":"v0.4.2","assets":[]}""")),
         )
     }

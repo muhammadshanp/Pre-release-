@@ -1,10 +1,20 @@
 name: Build check
 
-# Compiles the app and runs the unit tests. The APK it uploads is signed with a throwaway
-# debug key, so it is for testing only and cannot be installed over a released pre re.
+# Compiles the app in android/ and runs the unit tests. The APK it uploads is signed with
+# a throwaway debug key, so it is for testing only and cannot be installed over a released
+# pre re. Download it from the run's "Artifacts" section.
+
+# Only the Android sources matter here; the site has its own workflow.
 on:
   push:
+    paths: ['android/**', '.github/workflows/build.yml']
   pull_request:
+    paths: ['android/**', '.github/workflows/build.yml']
+
+# Every command below runs inside android/, which is the Gradle project root.
+defaults:
+  run:
+    working-directory: android
 
 jobs:
   build:
@@ -15,6 +25,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
       - run: chmod +x gradlew
       - name: Build and test
         shell: bash
@@ -33,4 +44,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: test-apk-not-for-release
-          path: app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/apk/release/app-release.apk

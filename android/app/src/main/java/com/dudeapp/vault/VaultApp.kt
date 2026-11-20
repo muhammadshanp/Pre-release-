@@ -2202,7 +2202,7 @@ fun VaultApp(
             version = currentVersion,
             onWebsite = {
                 aboutOpen = false
-                openUrl(context, "https://muhammadshanp.github.io/p-vault-website/")
+                openUrl(context, "https://muhammadshanp.github.io/Pre-release-/")
             },
             onDismiss = { aboutOpen = false },
         )

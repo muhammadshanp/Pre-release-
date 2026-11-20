@@ -51,16 +51,33 @@ The waitlist forms validate client-side and persist to `localStorage`
 Full native vault app: photos, PDFs, notes and reels, PIN + biometric lock, optional
 Google Drive backup, themes, push notifications, in-app updater.
 
+### Get an APK
+
+No Android SDK on your machine? Everything is wired in CI:
+
+1. Push a change (or run **Actions → Build check → Run workflow**).
+2. Open the run → **Artifacts** → `test-apk-not-for-release` — that's an installable APK.
+
+It is signed with a throwaway debug key, so it installs on a phone but cannot replace an
+installed P Vault. For a publishable build, bump `versionCode`/`versionName` in
+`android/app/build.gradle.kts` and merge to `main`: `.github/workflows/release.yml`
+builds `pre-re.apk`, verifies the signing key fingerprint, and publishes the release.
+
+Locally:
+
 ```bash
 cd android
 ./gradlew :app:assembleRelease    # needs ANDROID_HOME + JDK 17
-./gradlew :app:test
+./gradlew :app:testReleaseUnitTest
 ```
 
-The app was rebranded from P Vault. **Read [`android/REBRAND.md`](android/REBRAND.md)
-before shipping** — it lists what changed, which identifiers were deliberately kept
-for compatibility (applicationId, Firebase project, backup format), and the updater
-issue that still points at the old product's releases.
+The app was rebranded from P Vault. **Read [`android/REBRAND.md`](android/REBRAND.md)**
+first — it lists what changed, which identifiers were deliberately kept for
+compatibility (applicationId, Firebase project, backup format), and how signing decides
+whether an update installs.
 
-Note: no APK is built in this repo's CI for the app yet, and the uploaded
-`p-vault-main.zip` at the repo root is the original source archive — safe to delete.
+Site is published to GitHub Pages by `.github/workflows/pages.yml` →
+<https://muhammadshanp.github.io/Pre-release-/>.
+
+The uploaded `p-vault-main.zip` at the repo root is the original source archive — safe
+to delete, and the built APK from it is not committed.
