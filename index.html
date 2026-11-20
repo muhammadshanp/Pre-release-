@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>pre re — the pre-release workspace</title>
+<meta name="description" content="pre re is the pre-release workspace for teams who ship early and ship clean. Stage, preview and promote every release — before the world sees it." />
+<meta name="theme-color" content="#111827" />
+
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="assets/icons/favicon-64.png" sizes="64x64" type="image/png" />
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="pre re — the pre-release workspace" />
+<meta property="og:description" content="Stage, preview and promote every release — before the world sees it." />
+<meta property="og:image" content="assets/logo.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="glow" aria-hidden="true"></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="pre re — home">
+      <img class="brand-mark" src="assets/logo.svg" alt="" width="34" height="34" />
+      <span class="brand-name">pre re</span>
+    </a>
+
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a href="#product">Product</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn btn-ghost" href="#faq">Docs</a>
+      <a class="btn btn-solid" href="#access">Request access</a>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav" aria-label="Toggle menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="wrap hero-inner">
+      <p class="pill reveal">
+        <span class="dot" aria-hidden="true"></span>
+        Pre-release &middot; v0.1.0 is live
+      </p>
+
+      <h1 class="hero-title reveal">
+        <img class="hero-mark" src="assets/logo.svg" alt="" width="96" height="96" />
+        <span>pre re</span>
+      </h1>
+
+      <p class="hero-lead reveal">
+        A quiet place to stage what&rsquo;s next. Draft, preview and promote every
+        release with your team — before the world ever sees it.
+      </p>
+
+      <form class="access-form reveal" id="heroForm" novalidate>
+        <label class="sr-only" for="heroEmail">Work email</label>
+        <input id="heroEmail" name="email" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@company.com" required />
+        <button class="btn btn-solid" type="submit">
+          Request early access
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </form>
+      <p class="form-status" id="heroStatus" role="status" aria-live="polite"></p>
+      <p class="micro reveal">Invite-only. One email when your workspace is ready — nothing else.</p>
+
+      <ul class="hero-points reveal">
+        <li>Private by default</li>
+        <li>Zero-config previews</li>
+        <li>Ship-ready checklists</li>
+      </ul>
+    </div>
+
+    <div class="wrap app-wrap reveal" id="product">
+      <div class="app" role="img" aria-label="pre re app preview showing a release pipeline with draft, in-preview and ready states">
+        <div class="app-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="app-url">app.prere.dev / releases</span>
+        </div>
+        <div class="app-body">
+          <aside class="app-side">
+            <div class="app-brand">
+              <img src="assets/logo.svg" alt="" width="22" height="22" />
+              <span>pre re</span>
+            </div>
+            <nav aria-hidden="true">
+              <a class="is-active">Overview</a>
+              <a>Releases</a>
+              <a>Previews</a>
+              <a>Team</a>
+              <a>Settings</a>
+            </nav>
+            <div class="app-user" aria-hidden="true">
+              <span class="avatar">SR</span>
+              <div>
+                <strong>Sana R.</strong>
+                <small>Owner</small>
+              </div>
+            </div>
+          </aside>
+
+          <div class="app-main">
+            <div class="app-head">
+              <div>
+                <h2>Releases</h2>
+                <p>3 staged &middot; 1 ready to promote</p>
+              </div>
+              <span class="chip">+ New release</span>
+            </div>
+
+            <ul class="release-list" aria-hidden="true">
+              <li>
+                <div class="release-top">
+                  <strong>v0.1.0 &middot; Launch surface</strong>
+                  <span class="tag tag-ready">Ready</span>
+                </div>
+                <div class="bar"><span style="width: 100%"></span></div>
+                <small>Signed off by 3 reviewers</small>
+              </li>
+              <li>
+                <div class="release-top">
+                  <strong>v0.1.0-rc2 &middot; Preview links</strong>
+                  <span class="tag tag-preview">In preview</span>
+                </div>
+                <div class="bar"><span style="width: 68%"></span></div>
+                <small>4 previews &middot; expiring in 6 days</small>
+              </li>
+              <li>
+                <div class="release-top">
+                  <strong>v0.2.0 &middot; Approval gates</strong>
+                  <span class="tag tag-draft">Draft</span>
+                </div>
+                <div class="bar"><span style="width: 26%"></span></div>
+                <small>Drafting &middot; 2 open checks</small>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="wrap">
+      <header class="section-head reveal">
+        <p class="eyebrow">Features</p>
+        <h2>Everything between &ldquo;it&rsquo;s done&rdquo; and &ldquo;it&rsquo;s live&rdquo;</h2>
+        <p class="section-sub">The pre-release window is where launches are won or quietly go wrong. pre re gives it a home.</p>
+      </header>
+
+      <div class="cards">
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7h16M4 12h10M4 17h6" />
+            </svg>
+          </span>
+          <h3>Staged releases</h3>
+          <p>Every release lives in its own lane until you promote it. Nothing leaks by accident.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" />
+            </svg>
+          </span>
+          <h3>Instant previews</h3>
+          <p>A shareable link the moment you push. No spin-up, no waiting, no stale screenshots.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="10" width="16" height="10" rx="2" />
+              <path d="M8 10V7a4 4 0 1 1 8 0v3" />
+            </svg>
+          </span>
+          <h3>Private by default</h3>
+          <p>Invite-only access, expiring links and audit trails. Sharing is a decision, not a default.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m4 12.5 5 5L20 6.5" />
+            </svg>
+          </span>
+          <h3>Approval gates</h3>
+          <p>Checklists that must be signed off before anything goes live — by the people who own it.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 4v16M16 4v16M4 9h16M4 15h16" />
+            </svg>
+          </span>
+          <h3>Diff-aware review</h3>
+          <p>See exactly what changed in this release, scoped to the release — not the whole repo.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v6m0 6v6M3 12h6m6 0h6" />
+            </svg>
+          </span>
+          <h3>Ships with your stack</h3>
+          <p>A small CLI and an honest API. It slots into the workflow you already run.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="how">
+    <div class="wrap">
+      <header class="section-head reveal">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps, then it&rsquo;s live</h2>
+      </header>
+
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step-n">01</span>
+          <h3>Connect your project</h3>
+          <p>Point pre re at a repo or a deployed URL. It picks up your branches as release candidates.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step-n">02</span>
+          <h3>Stage the release</h3>
+          <p>Preview it privately, gather sign-off, and watch the checklist close itself out.</p>
+        </li>
+        <li class="step reveal">
+          <span class="step-n">03</span>
+          <h3>Promote when ready</h3>
+          <p>One click publishes. One click rolls it back. No re-deploy, no re-negotiating.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="wrap narrow">
+      <header class="section-head reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2>Questions, answered plainly</h2>
+      </header>
+
+      <div class="faq reveal">
+        <details>
+          <summary>What exactly is pre re?</summary>
+          <p>A workspace for the stretch between finishing work and shipping it. You stage a release, preview it privately, collect the sign-offs, then promote it when you decide.</p>
+        </details>
+        <details>
+          <summary>Is the pre-release usable today?</summary>
+          <p>Yes — v0.1.0 is live for invited teams while the surface settles. Request access and you&rsquo;ll be added in the order requests arrive.</p>
+        </details>
+        <details>
+          <summary>Where does my code live?</summary>
+          <p>Where it already lives. pre re reads what it needs to build a preview and keeps release metadata in your workspace — your repo stays the source of truth.</p>
+        </details>
+        <details>
+          <summary>What happens when it leaves pre-release?</summary>
+          <p>Nothing breaks. Releases become generally available, preview links keep their expiry, and the API is versioned from day one.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="access">
+    <div class="wrap cta-inner reveal">
+      <img class="cta-mark" src="assets/logo.svg" alt="" width="64" height="64" />
+      <h2>Be first in line for pre re</h2>
+      <p>Early access opens in small batches. Leave an address and we&rsquo;ll send exactly one email.</p>
+
+      <form class="access-form" id="ctaForm" novalidate>
+        <label class="sr-only" for="ctaEmail">Work email</label>
+        <input id="ctaEmail" name="email" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@company.com" required />
+        <button class="btn btn-solid" type="submit">Join the list</button>
+      </form>
+      <p class="form-status" id="ctaStatus" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <img src="assets/logo.svg" alt="" width="28" height="28" />
+      <span>pre re</span>
+      <small>Built in pre-release.</small>
+    </div>
+    <nav aria-label="Footer">
+      <a href="#product">Product</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="#access">Request access</a>
+    </nav>
+    <p class="copyright">&copy; <span id="year">2026</span> pre re</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
