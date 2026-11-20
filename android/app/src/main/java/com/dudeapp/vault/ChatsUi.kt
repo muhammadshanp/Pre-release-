@@ -1182,13 +1182,7 @@ private fun MessageBubble(
                     color = preColors.onBubbleMine.copy(alpha = 0.6f),
                     fontSize = 10.sp,
                 )
-                Spacer(Modifier.width(3.dp))
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Saved on device",
-                    tint = preColors.onBubbleMine.copy(alpha = 0.6f),
-                    modifier = Modifier.size(12.dp),
-                )
+
             }
         }
     }
