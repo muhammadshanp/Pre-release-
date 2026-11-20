@@ -2473,129 +2473,38 @@ private fun HomeContent(
 
 @Composable
 private fun HomeHero(total: Int) {
-    val context = LocalContext.current
-    val preset = LocalThemePreset.current
-    val colors = preset.gradient ?: listOf(Color(0xFFF0703F), Color(0xFFB9391A))
-    val shape = RoundedCornerShape(28.dp)
-    val heroPhoto: File? = null
-    val heroPicture = if (heroPhoto != null) null else preset.cardPictures[CardPicture.HERO]
-    val artwork = if (heroPicture != null) {
-        remember(heroPicture) {
-            BitmapFactory.decodeResource(context.resources, heroPicture)?.asImageBitmap()
-        }
-    } else if (preset.heroArt) {
-        themeArtwork(preset)
-    } else {
-        null
-    }
+    val colors = preReColors()
     Box(
         Modifier
             .fillMaxWidth()
-            .clip(shape)
-            .background(Brush.linearGradient(colors)),
+            .clip(PreReControlShape)
+            .background(colors.primaryFill)
+            .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
-        val ownPhotoArt = heroPhoto?.let { remember(it) { CardPictures.load(context.resources, null, it) } }
-        if (ownPhotoArt != null) {
-            // A photo of the user's own fills the card, cropped; the number and the label stay
-            // where they are, over a wash that keeps them readable.
-            Image(
-                bitmap = ownPhotoArt,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to Color.Black.copy(alpha = 0.5f),
-                            0.55f to Color.Black.copy(alpha = 0.15f),
-                            1f to Color.Black.copy(alpha = 0.45f),
-                        ),
-                    ),
-            )
-        } else if (heroPicture != null && artwork != null) {
-            // A card picture of its own covers the whole card, cropped to fill, so any
-            // picture works whatever its size; the card keeps its size and shape.
-            Image(
-                bitmap = artwork,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.horizontalGradient(
-                            0f to Color.Black.copy(alpha = 0.62f),
-                            0.45f to Color.Black.copy(alpha = 0.32f),
-                            1f to Color.Transparent,
-                        ),
-                    ),
-            )
-        } else if (artwork != null) {
-            // A theme picture (not a card picture) keeps the right-side treatment.
-            Image(
-                bitmap = artwork,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.CenterEnd,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.62f)
-                    .align(Alignment.CenterEnd),
-            )
-            Box(
-                Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.62f)
-                    .align(Alignment.CenterEnd)
-                    .background(
-                        Brush.horizontalGradient(
-                            0f to colors.first(),
-                            0.45f to colors.first().copy(alpha = 0.55f),
-                            1f to Color.Transparent,
-                        ),
-                    ),
-            )
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            0f to colors.first().copy(alpha = 0.65f),
-                            0.5f to Color.Transparent,
-                        ),
-                    ),
-            )
-        }
-        Column(Modifier.padding(horizontal = 22.dp, vertical = 20.dp)) {
+        Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Outlined.Lock,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp),
+                    tint = colors.onPrimaryFill.copy(alpha = 0.75f),
+                    modifier = Modifier.size(14.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "PRIVATE VAULT",
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.2.sp,
+                    text = "Private vault",
+                    color = colors.onPrimaryFill.copy(alpha = 0.75f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
                 )
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
             Text(
                 text = total.toString(),
-                color = Color.White,
-                fontSize = 44.sp,
-                lineHeight = 48.sp,
-                fontWeight = FontWeight.Bold,
+                color = colors.onPrimaryFill,
+                fontSize = 40.sp,
+                lineHeight = 44.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-1).sp,
             )
             Text(
                 text = if (total == 1) {
@@ -2603,8 +2512,8 @@ private fun HomeHero(total: Int) {
                 } else {
                     "items kept safe on this device"
                 },
-                color = Color.White.copy(alpha = 0.92f),
-                fontSize = 14.sp,
+                color = colors.onPrimaryFill.copy(alpha = 0.75f),
+                fontSize = 13.sp,
             )
         }
     }
