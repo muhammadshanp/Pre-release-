@@ -278,10 +278,6 @@ private val VaultShapes = Shapes(
 )
 
 /**
- * The app background. A plain colour for Light and Dark; a picture behind a dark wash for
- * the special looks, so text and cards stay readable on top of it.
- */
-/**
  * The page behind every screen. The design is flat, so this is the theme's own background
  * and nothing else — no picture, no gradient, no wash.
  */
@@ -293,94 +289,6 @@ fun Backdrop() {
             .background(MaterialTheme.colorScheme.background),
     )
 }
-
-@Composable
-fun PVaultTheme(
-    preset: ThemePreset = ThemePreset.WHITE,
-    content: @Composable () -> Unit,
-) {
-    val onError = if (preset.dark) Color(0xFF2A0A0A) else Color.White
-    val base = if (preset.dark) darkColorScheme() else lightColorScheme()
-    val colors = base.copy(
-        primary = preset.primary,
-        onPrimary = preset.onPrimary,
-        primaryContainer = preset.primaryContainer,
-        onPrimaryContainer = preset.onPrimaryContainer,
-        secondary = preset.secondary,
-        onSecondary = if (preset.dark) Color(0xFF1F0D06) else Color.White,
-        secondaryContainer = preset.primaryContainer,
-        onSecondaryContainer = preset.onPrimaryContainer,
-        tertiary = preset.secondary,
-        onTertiary = if (preset.dark) Color(0xFF1F0D06) else Color.White,
-        tertiaryContainer = preset.primaryContainer,
-        onTertiaryContainer = preset.onPrimaryContainer,
-        background = preset.background,
-        onBackground = preset.onBackground,
-        surface = preset.surface,
-        onSurface = preset.onBackground,
-        surfaceVariant = preset.surfaceVariant,
-        onSurfaceVariant = preset.onSurfaceVariant,
-        surfaceTint = preset.surface,
-        inverseSurface = if (preset.dark) preset.onBackground else Color(0xFF12141A),
-        inverseOnSurface = if (preset.dark) preset.background else Color.White,
-        error = preset.error,
-        onError = onError,
-        errorContainer = if (preset.dark) Color(0xFF3A1717) else Color(0xFFFCE4E4),
-        onErrorContainer = preset.error,
-        outline = preset.outline,
-        outlineVariant = preset.outline,
-        scrim = Color.Black,
-        surfaceBright = if (preset.dark) preset.surfaceVariant else Color.White,
-        surfaceDim = if (preset.dark) preset.background else Color(0xFFE6E8EC),
-        surfaceContainer = if (preset.dark) Color(0xFF1B1D23) else preset.background,
-        surfaceContainerHigh = preset.surfaceVariant,
-        surfaceContainerHighest = if (preset.dark) preset.outline else Color(0xFFE4E6EB),
-        surfaceContainerLow = preset.surface,
-        surfaceContainerLowest = if (preset.dark) preset.background else Color.White,
-    )
-    MaterialTheme(colorScheme = colors, typography = VaultTypography, shapes = VaultShapes) {
-        CompositionLocalProvider(LocalThemePreset provides preset) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = colors.background,
-                contentColor = colors.onBackground,
-            ) {
-                content()
-            }
-        }
-    }
-}
-
-private val BaseType = Typography()
-
-/** Tighter, bolder headings and slightly roomier body text than the Material defaults. */
-private val VaultTypography = Typography(
-    headlineLarge = BaseType.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
-    headlineMedium = BaseType.headlineMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.4).sp),
-    headlineSmall = BaseType.headlineSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp),
-    titleLarge = BaseType.titleLarge.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.2).sp),
-    titleMedium = BaseType.titleMedium.copy(fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp),
-    titleSmall = BaseType.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-    bodyLarge = BaseType.bodyLarge.copy(letterSpacing = 0.1.sp),
-    bodyMedium = BaseType.bodyMedium.copy(letterSpacing = 0.1.sp),
-    labelLarge = BaseType.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-)
-
-/** Rounder corners everywhere: text fields, chips, menus, dialogs and sheets. */
-private val VaultShapes = Shapes(
-    extraSmall = RoundedCornerShape(6.dp),
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(8.dp),
-    large = RoundedCornerShape(12.dp),
-    extraLarge = RoundedCornerShape(20.dp),
-)
-
-
-/**
- * The card photos of a theme made on this phone, provided to every card the same way the
- * chosen card photos are. A theme from the catalogue uses resources instead, which need no
- * provider.
- */
 
 /** The active look, for the few places that need more than the colours (backdrop, glow). */
 val LocalThemePreset = compositionLocalOf { ThemePreset.WHITE }
