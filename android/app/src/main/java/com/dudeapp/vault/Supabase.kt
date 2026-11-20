@@ -88,11 +88,14 @@ internal object Supabase {
     suspend fun checkName(context: Context, name: String): NameCheck = withContext(Dispatchers.IO) {
         val json = rpc("pre_re_check", JSONObject().put("p_username", normalizeUsername(name)))
             ?: return@withContext NameCheck.Offline
-        when {
-            json.optBoolean("available") -> NameCheck.Free
-            json.optString("reason") == "taken" -> NameCheck.Taken
-            else -> NameCheck.Rejected(json.optString("reason"))
-        }
+        parseCheck(json)
+    }
+
+    /** Split out from the network call so the mapping itself can be tested. */
+    internal fun parseCheck(json: JSONObject): NameCheck = when {
+        json.optBoolean("available") -> NameCheck.Free
+        json.optString("reason") == "taken" -> NameCheck.Taken
+        else -> NameCheck.Rejected(json.optString("reason"))
     }
 
     suspend fun claimName(context: Context, name: String): String? = withContext(Dispatchers.IO) {
