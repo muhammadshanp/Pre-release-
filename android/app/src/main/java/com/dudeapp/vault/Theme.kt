@@ -281,152 +281,109 @@ private val VaultShapes = Shapes(
  * The app background. A plain colour for Light and Dark; a picture behind a dark wash for
  * the special looks, so text and cards stay readable on top of it.
  */
+/**
+ * The page behind every screen. The design is flat, so this is the theme's own background
+ * and nothing else — no picture, no gradient, no wash.
+ */
 @Composable
 fun Backdrop() {
-    val preset = LocalThemePreset.current
-    val downloadedThemes = LocalDownloadedThemes.current
-    val context = LocalContext.current
-    // The whole background is one choice: the theme's own backdrop, or one image of the
-    // user's. While an image is chosen the theme only supplies the colours on top of it.
-    val ownImage = CardPhotoFiles.background.value
-    if (ownImage != null) {
-        val picture = remember(ownImage) {
-            runCatching {
-                val full = android.graphics.BitmapFactory.decodeFile(ownImage.absolutePath)
-                val small = android.graphics.Bitmap.createScaledBitmap(
-                    full,
-                    (full.width / 2).coerceAtLeast(1),
-                    (full.height / 2).coerceAtLeast(1),
-                    true,
-                )
-                small.asImageBitmap()
-            }.getOrNull()
-        }
-        Box(Modifier.fillMaxSize()) {
-            if (picture != null) {
-                Image(
-                    bitmap = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-            }
-            // The same wash as a picture look, so text and cards stay readable on it.
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = 0.42f),
-                            0.45f to preset.background.copy(alpha = 0.6f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
-        }
-        return
-    }
-    when (val style = preset.backdrop) {
-        is BackdropStyle.Plain -> Box(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        )
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    )
+}
 
-        is BackdropStyle.Remote -> {
-            val theme = downloadedThemes.firstOrNull { it.pictureUrl == style.url }
-            val file = theme?.let { ThemeCatalogue(context).picture(it) }
-            // Only the top of the picture is washed out, so the hero card and the section
-            // rows below it can be read; further down the cards are dark enough already.
-            if (file != null) {
-                Box(Modifier.fillMaxSize()) {
-                    RemoteBackdrop(picture = file, scrimColor = Color.Transparent, scrim = 0f)
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to preset.background.copy(alpha = style.scrim + 0.15f),
-                                    0.32f to preset.background.copy(alpha = style.scrim * 0.6f),
-                                    0.55f to preset.background.copy(alpha = 0.25f),
-                                    0.75f to preset.background.copy(alpha = 0.45f),
-                                    1f to preset.background.copy(alpha = 0.7f),
-                                ),
-                            ),
-                    )
-                }
-            } else {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
-                )
-            }
-        }
-
-        is BackdropStyle.LocalFile -> Box(Modifier.fillMaxSize()) {
-            val picture = remember(style.file) {
-                android.graphics.BitmapFactory.decodeFile(style.file.absolutePath)
-                    ?.let { android.graphics.Bitmap.createScaledBitmap(it, it.width / 2, it.height / 2, true) }
-                    ?.asImageBitmap()
-            }
-            if (picture != null) {
-                Image(
-                    bitmap = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-            }
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = style.scrim),
-                            0.45f to preset.background.copy(alpha = style.scrim + 0.18f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
-        }
-
-        is BackdropStyle.Picture -> Box(Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(style.image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+@Composable
+fun PVaultTheme(
+    preset: ThemePreset = ThemePreset.WHITE,
+    content: @Composable () -> Unit,
+) {
+    val onError = if (preset.dark) Color(0xFF2A0A0A) else Color.White
+    val base = if (preset.dark) darkColorScheme() else lightColorScheme()
+    val colors = base.copy(
+        primary = preset.primary,
+        onPrimary = preset.onPrimary,
+        primaryContainer = preset.primaryContainer,
+        onPrimaryContainer = preset.onPrimaryContainer,
+        secondary = preset.secondary,
+        onSecondary = if (preset.dark) Color(0xFF1F0D06) else Color.White,
+        secondaryContainer = preset.primaryContainer,
+        onSecondaryContainer = preset.onPrimaryContainer,
+        tertiary = preset.secondary,
+        onTertiary = if (preset.dark) Color(0xFF1F0D06) else Color.White,
+        tertiaryContainer = preset.primaryContainer,
+        onTertiaryContainer = preset.onPrimaryContainer,
+        background = preset.background,
+        onBackground = preset.onBackground,
+        surface = preset.surface,
+        onSurface = preset.onBackground,
+        surfaceVariant = preset.surfaceVariant,
+        onSurfaceVariant = preset.onSurfaceVariant,
+        surfaceTint = preset.surface,
+        inverseSurface = if (preset.dark) preset.onBackground else Color(0xFF12141A),
+        inverseOnSurface = if (preset.dark) preset.background else Color.White,
+        error = preset.error,
+        onError = onError,
+        errorContainer = if (preset.dark) Color(0xFF3A1717) else Color(0xFFFCE4E4),
+        onErrorContainer = preset.error,
+        outline = preset.outline,
+        outlineVariant = preset.outline,
+        scrim = Color.Black,
+        surfaceBright = if (preset.dark) preset.surfaceVariant else Color.White,
+        surfaceDim = if (preset.dark) preset.background else Color(0xFFE6E8EC),
+        surfaceContainer = if (preset.dark) Color(0xFF1B1D23) else preset.background,
+        surfaceContainerHigh = preset.surfaceVariant,
+        surfaceContainerHighest = if (preset.dark) preset.outline else Color(0xFFE4E6EB),
+        surfaceContainerLow = preset.surface,
+        surfaceContainerLowest = if (preset.dark) preset.background else Color.White,
+    )
+    MaterialTheme(colorScheme = colors, typography = VaultTypography, shapes = VaultShapes) {
+        CompositionLocalProvider(LocalThemePreset provides preset) {
+            Surface(
                 modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to preset.background.copy(alpha = style.scrim),
-                            0.45f to preset.background.copy(alpha = style.scrim + 0.18f),
-                            1f to preset.background,
-                        ),
-                    ),
-            )
+                color = colors.background,
+                contentColor = colors.onBackground,
+            ) {
+                content()
+            }
         }
     }
 }
+
+private val BaseType = Typography()
+
+/** Tighter, bolder headings and slightly roomier body text than the Material defaults. */
+private val VaultTypography = Typography(
+    headlineLarge = BaseType.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
+    headlineMedium = BaseType.headlineMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.4).sp),
+    headlineSmall = BaseType.headlineSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp),
+    titleLarge = BaseType.titleLarge.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.2).sp),
+    titleMedium = BaseType.titleMedium.copy(fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp),
+    titleSmall = BaseType.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+    bodyLarge = BaseType.bodyLarge.copy(letterSpacing = 0.1.sp),
+    bodyMedium = BaseType.bodyMedium.copy(letterSpacing = 0.1.sp),
+    labelLarge = BaseType.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+)
+
+/** Rounder corners everywhere: text fields, chips, menus, dialogs and sheets. */
+private val VaultShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(12.dp),
+    extraLarge = RoundedCornerShape(20.dp),
+)
+
 
 /**
  * The card photos of a theme made on this phone, provided to every card the same way the
  * chosen card photos are. A theme from the catalogue uses resources instead, which need no
  * provider.
  */
-val LocalThemeCards = compositionLocalOf<Map<CardPicture, java.io.File>> { emptyMap() }
 
 /** The active look, for the few places that need more than the colours (backdrop, glow). */
 val LocalThemePreset = compositionLocalOf { ThemePreset.WHITE }
 
 
 /** Every look downloaded from the theme catalogue, so pictures can be found by address. */
-val LocalDownloadedThemes = compositionLocalOf<List<DownloadedTheme>> { emptyList() }

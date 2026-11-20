@@ -2477,7 +2477,7 @@ private fun HomeHero(total: Int) {
     val preset = LocalThemePreset.current
     val colors = preset.gradient ?: listOf(Color(0xFFF0703F), Color(0xFFB9391A))
     val shape = RoundedCornerShape(28.dp)
-    val heroPhoto = LocalThemeCards.current[CardPicture.HERO] ?: CardPhotoFiles.current.value[CardPicture.HERO]
+    val heroPhoto: File? = null
     val heroPicture = if (heroPhoto != null) null else preset.cardPictures[CardPicture.HERO]
     val artwork = if (heroPicture != null) {
         remember(heroPicture) {
@@ -2618,18 +2618,11 @@ private fun HomeHero(total: Int) {
 @Composable
 private fun themeArtwork(preset: ThemePreset): ImageBitmap? {
     val context = LocalContext.current
-    val downloaded = LocalDownloadedThemes.current
     return when (val style = preset.backdrop) {
-        is BackdropStyle.Remote -> {
-            val theme = downloaded.firstOrNull { it.pictureUrl == style.url }
-            val file = theme?.let { ThemeCatalogue(context).picture(it) }
-            file?.let { ThemePictures.get(it)?.asImageBitmap() }
-        }
+        is BackdropStyle.Remote -> null
         is BackdropStyle.Picture -> remember(style.image) {
             BitmapFactory.decodeResource(context.resources, style.image)?.asImageBitmap()
         }
-        // A theme made on this phone carries its photos with it, so its backdrop is not an
-        // artwork source here; the card photos come from LocalThemeCards instead.
         is BackdropStyle.LocalFile -> null
         BackdropStyle.Plain -> null
     }
@@ -2646,8 +2639,8 @@ private fun HomeTile(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(22.dp)
-    // A theme made on this phone first, then a photo chosen for this card on its own.
-    val photo = LocalThemeCards.current[kind] ?: CardPhotoFiles.current.value[kind]
+    // The design has no card pictures: a tile is its hairline and its label.
+    val photo: File? = null
     // A photo of the user's own is the whole card; the theme's picture sits behind a wash.
     val ownPhoto = photo != null
     val picture = if (ownPhoto) null else LocalThemePreset.current.cardPictures[kind]
