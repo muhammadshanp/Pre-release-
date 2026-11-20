@@ -1,0 +1,47 @@
+name: Build check
+
+# Compiles the app in android/ and runs the unit tests. The APK it uploads is signed with
+# a throwaway debug key, so it is for testing only and cannot be installed over a released
+# pre re. Download it from the run's "Artifacts" section.
+
+# Only the Android sources matter here; the site has its own workflow.
+on:
+  push:
+    paths: ['android/**', '.github/workflows/build.yml']
+  pull_request:
+    paths: ['android/**', '.github/workflows/build.yml']
+
+# Every command below runs inside android/, which is the Gradle project root.
+defaults:
+  run:
+    working-directory: android
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+      - run: chmod +x gradlew
+      - name: Build and test
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon assembleRelease testReleaseUnitTest 2>&1 | tee build.log
+      # Shows compiler errors and failed tests on the run's summary page, so the cause
+      # can be read without opening the full log.
+      - name: Report errors
+        if: failure()
+        shell: bash
+        run: |
+          grep -E "^e: |^w: .*deprecat.*error|FAILED$| FAILED|^\s+(java|org|kotlin)\.[A-Za-z.]+(Error|Exception)|What went wrong" -A1 build.log \
+            | grep -v "^--$" | head -n 40 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error::${line}"; done || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-apk-not-for-release
+          path: android/app/build/outputs/apk/release/app-release.apk

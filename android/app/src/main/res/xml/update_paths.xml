@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The downloaded update APK goes to Android's installer; a vault file is shared only
+     when the user taps Share on it. -->
+<paths>
+    <cache-path name="updates" path="updates/" />
+    <files-path name="vault" path="vault/" />
+    <!-- The camera app writes a new photo here; pre re then moves it into the vault. -->
+    <cache-path name="camera" path="camera/" />
+    <!-- A video attached to a suggestion, opened by the admin in a player app. -->
+    <cache-path name="suggestions" path="suggestions/" />
+</paths>
