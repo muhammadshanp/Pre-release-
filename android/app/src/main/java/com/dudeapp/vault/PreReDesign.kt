@@ -236,9 +236,7 @@ internal fun PreReOutlineButton(
         colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.ink),
         border = androidx.compose.foundation.BorderStroke(1.dp, colors.border),
         contentPadding = PaddingValues(horizontal = 16.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(40.dp),
+        modifier = modifier.height(40.dp),
     ) {
         if (leading != null) {
             leading()
@@ -310,44 +308,5 @@ internal fun preReBubbleShape(mine: Boolean, first: Boolean, last: Boolean): Rou
             bottomEnd = big,
             bottomStart = if (last) big else tail,
         )
-    }
-}
-
-/** The chat header from the design: chevron, 32dp avatar, name over a 50% subtitle. */
-@Composable
-internal fun PreReChatHeaderContent(
-    name: String,
-    subtitle: String,
-    avatar: @Composable () -> Unit,
-) {
-    val colors = preReColors()
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .background(colors.page),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.padding(start = 16.dp)) { avatar() }
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = name,
-                color = colors.ink,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 22.4.sp,
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            )
-            Text(
-                text = subtitle,
-                color = colors.ink.copy(alpha = 0.5f),
-                fontSize = 12.sp,
-                lineHeight = 18.sp,
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            )
-        }
     }
 }

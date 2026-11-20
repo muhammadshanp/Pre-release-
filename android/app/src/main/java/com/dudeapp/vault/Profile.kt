@@ -396,6 +396,8 @@ fun ProfileSheet(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(18.dp))
+            PreReNameCard()
+            Spacer(Modifier.height(12.dp))
             GoogleAccountSection(onExternal = onExternal, onSignedIn = onGoogleSignedIn)
             Spacer(Modifier.height(12.dp))
             DriveBackupSection(

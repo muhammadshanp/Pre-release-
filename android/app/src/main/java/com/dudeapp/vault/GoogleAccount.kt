@@ -140,7 +140,6 @@ fun GoogleAccountSection(
     var special by remember { mutableStateOf(access.isSpecial()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    var draftEmail by remember { mutableStateOf("") }
 
     fun fail(message: String) {
         busy = false
@@ -222,7 +221,7 @@ fun GoogleAccountSection(
         Spacer(Modifier.height(24.dp))
         PreReHeading("Create an account")
         Spacer(Modifier.height(2.dp))
-        PreReBody("Enter your email to sign up for this app")
+        PreReBody("Your name and picture come from Google. Nothing else is shared.")
         Spacer(Modifier.height(24.dp))
         val signedInAs = email
         if (signedInAs != null) {
@@ -253,32 +252,13 @@ fun GoogleAccountSection(
                 }
             }
         } else {
-            // The design's sign-in column: field, Continue, "or", then Google.
-            PreReField(
-                value = draftEmail,
-                onValueChange = {
-                    draftEmail = it
-                    error = null
-                },
-                placeholder = "email@domain.com",
-                enabled = !busy,
-                keyboardType = KeyboardType.Email,
-            )
-            Spacer(Modifier.height(16.dp))
+            // One action, named for what it does. An email box that Google then ignored
+            // looked like a form and behaved like a decoration.
             PreRePrimaryButton(
-                label = "Continue",
+                label = "Continue with Google",
                 onClick = { signIn() },
                 busy = busy,
                 enabled = !busy,
-            )
-            Spacer(Modifier.height(16.dp))
-            PreReDividerLabel("or")
-            Spacer(Modifier.height(16.dp))
-            PreReOutlineButton(
-                label = "Google",
-                onClick = { signIn() },
-                enabled = !busy,
-                leading = { PreReGoogleGlyph() },
             )
         }
         if (special) {

@@ -46,6 +46,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -701,7 +702,7 @@ fun ChatScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = "Active recently",
+                        text = "On this phone",
                         color = preColors.ink.copy(alpha = 0.5f),
                         fontSize = 12.sp,
                         maxLines = 1,
@@ -822,9 +823,24 @@ fun ChatScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                    items(messages, key = { it.file.absolutePath }) { message ->
+                    itemsIndexed(messages, key = { _, m -> m.file.absolutePath }) { index, message ->
+                        val previous = messages.getOrNull(index - 1)
+                        val next = messages.getOrNull(index + 1)
+                        if (previous == null || dayStamp(previous.stamp) != dayStamp(message.stamp)) {
+                            Text(
+                                text = dayLabel(context, message.stamp),
+                                color = preColors.ink.copy(alpha = 0.45f),
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp, bottom = 2.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            )
+                        }
                         MessageBubble(
                             message = message,
+                            first = previous == null || dayStamp(previous.stamp) != dayStamp(message.stamp),
+                            last = next == null || dayStamp(next.stamp) != dayStamp(message.stamp),
                             selected = selected?.file == message.file,
                             playing = playingFile?.absolutePath == message.attachment?.absolutePath,
                             onPlayVoice = { toggleVoice(message) },
@@ -1074,6 +1090,8 @@ fun ChatScreen(
 @Composable
 private fun MessageBubble(
     message: ChatMessage,
+    first: Boolean,
+    last: Boolean,
     selected: Boolean,
     playing: Boolean,
     onPlayVoice: () -> Unit,
@@ -1082,7 +1100,7 @@ private fun MessageBubble(
 ) {
     val context = LocalContext.current
     val preColors = preReColors()
-    val shape = RoundedCornerShape(18.dp)
+    val shape = preReBubbleShape(mine = true, first = first, last = last)
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
@@ -1173,7 +1191,7 @@ private fun MessageBubble(
                 else -> Text(message.text, fontSize = 15.sp, color = preColors.onBubbleMine)
             }
             Spacer(Modifier.height(2.dp))
-            Row(
+            if (last) Row(
                 modifier = Modifier.align(Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -1237,6 +1255,31 @@ private fun listTimeOf(context: Context, stamp: Long): String {
         timeOf(context, stamp)
     } else {
         DateFormat.getDateFormat(context).format(Date(stamp))
+    }
+}
+
+/** Midnight of the day a message was written, for grouping. */
+private fun dayStamp(stamp: Long): Long {
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = stamp
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar.timeInMillis
+}
+
+/** "Today", "Yesterday", or the date — the divider above a day's messages. */
+private fun dayLabel(context: android.content.Context, stamp: Long): String {
+    val today = dayStamp(System.currentTimeMillis())
+    return when (dayStamp(stamp)) {
+        today -> "Today"
+        today - 86_400_000L -> "Yesterday"
+        else -> DateUtils.formatDateTime(
+            context,
+            stamp,
+            DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL,
+        )
     }
 }
 
