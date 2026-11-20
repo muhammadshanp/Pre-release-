@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -136,6 +138,7 @@ fun GoogleAccountSection(
     var special by remember { mutableStateOf(access.isSpecial()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var draftEmail by remember { mutableStateOf("") }
 
     fun fail(message: String) {
         busy = false
@@ -197,25 +200,22 @@ fun GoogleAccountSection(
             }
     }
 
+    val preColors = preReColors()
     Column(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-            .padding(14.dp),
+            .background(preColors.page)
+            .border(1.dp, preColors.divider, RoundedCornerShape(18.dp))
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = "Google account",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Spacer(Modifier.height(3.dp))
-        Text(
-            text = "Optional. pre re works the same without it. Signing in only fills in your name and picture; your files stay on this phone.",
-            color = TextSoft,
-            fontSize = 12.sp,
-        )
-        Spacer(Modifier.height(10.dp))
+        PreReAppName()
+        Spacer(Modifier.height(24.dp))
+        PreReHeading("Create an account")
+        Spacer(Modifier.height(2.dp))
+        PreReBody("Enter your email to sign up for this app")
+        Spacer(Modifier.height(24.dp))
         val signedInAs = email
         if (signedInAs != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -245,22 +245,33 @@ fun GoogleAccountSection(
                 }
             }
         } else {
-            Button(
+            // The design's sign-in column: field, Continue, "or", then Google.
+            PreReField(
+                value = draftEmail,
+                onValueChange = {
+                    draftEmail = it
+                    error = null
+                },
+                placeholder = "email@domain.com",
+                enabled = !busy,
+                keyboardType = KeyboardType.Email,
+            )
+            Spacer(Modifier.height(16.dp))
+            PreRePrimaryButton(
+                label = "Continue",
+                onClick = { signIn() },
+                busy = busy,
+                enabled = !busy,
+            )
+            Spacer(Modifier.height(16.dp))
+            PreReDividerLabel("or")
+            Spacer(Modifier.height(16.dp))
+            PreReOutlineButton(
+                label = "Google",
                 onClick = { signIn() },
                 enabled = !busy,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(46.dp),
-            ) {
-                if (busy) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Signing in...")
-                } else {
-                    Text("Sign in with Google", fontWeight = FontWeight.SemiBold)
-                }
-            }
+                leading = { PreReGoogleGlyph() },
+            )
         }
         if (special) {
             Spacer(Modifier.height(6.dp))
