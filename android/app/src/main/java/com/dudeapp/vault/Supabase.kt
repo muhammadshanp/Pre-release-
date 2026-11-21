@@ -19,7 +19,8 @@ import org.json.JSONObject
  *
  *   pre_re_check(name)            -> {"available": bool, "reason": "ok"|"taken"|...}
  *   pre_re_claim(name, device)    -> {"status": "ok"|"taken"|"already_yours"|...}
- *   pre_re_release(name, device)  -> {"released": bool}
+ *   pre_re_release(name, device)  -> {"released": bool}   (kept server-side; the app never
+ *                                                          gives a name back)
  *
  * The key below is a publishable key: it is meant to ship inside the app and is useless
  * without the row-level security it is subject to.
@@ -106,16 +107,6 @@ internal object Supabase {
                 .put("p_device", deviceId(context)),
         ) ?: return@withContext null
         json.optString("status").takeIf { it.isNotEmpty() }
-    }
-
-    suspend fun releaseName(context: Context, name: String): Boolean = withContext(Dispatchers.IO) {
-        val json = rpc(
-            "pre_re_release",
-            JSONObject()
-                .put("p_username", normalizeUsername(name))
-                .put("p_device", deviceId(context)),
-        ) ?: return@withContext false
-        json.optBoolean("released")
     }
 
     /** Turns the server's terse codes into something a person can act on. */
