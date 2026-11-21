@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -110,6 +111,8 @@ fun ProfileSheet(
     name: String,
     avatar: File?,
     drive: DriveBackupState,
+    /** False when this name has not been given Drive backup. */
+    backupAllowed: Boolean = true,
     onPickPhoto: () -> Unit,
     onConnectDrive: () -> Unit,
     onDisconnectDrive: () -> Unit,
@@ -196,13 +199,17 @@ fun ProfileSheet(
             Spacer(Modifier.height(12.dp))
             GoogleAccountSection(onExternal = onExternal, onSignedIn = onGoogleSignedIn)
             Spacer(Modifier.height(12.dp))
-            DriveBackupSection(
-                drive = drive,
-                onConnect = onConnectDrive,
-                onDisconnect = onDisconnectDrive,
-                onBackupNow = { onBackupNow(draft.trim()) },
-                onRestoreFile = onRestoreFile,
-            )
+            if (backupAllowed) {
+                DriveBackupSection(
+                    drive = drive,
+                    onConnect = onConnectDrive,
+                    onDisconnect = onDisconnectDrive,
+                    onBackupNow = { onBackupNow(draft.trim()) },
+                    onRestoreFile = onRestoreFile,
+                )
+            } else {
+                LockedFeature("Drive backup", "This name has not been given backup access.")
+            }
             Spacer(Modifier.height(18.dp))
             Button(
                 onClick = { onSave(draft.trim()) },
@@ -214,6 +221,31 @@ fun ProfileSheet(
             ) {
                 Text("Save profile", fontWeight = FontWeight.SemiBold)
             }
+        }
+    }
+}
+
+/** A feature that exists but has not been granted to this name. */
+@Composable
+private fun LockedFeature(title: String, detail: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Lock,
+            contentDescription = null,
+            tint = TextSoft,
+            modifier = Modifier.size(20.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text(detail, color = TextSoft, fontSize = 12.sp)
         }
     }
 }

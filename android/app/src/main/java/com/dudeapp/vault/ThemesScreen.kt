@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -129,6 +130,18 @@ fun ThemesScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                     Text("Themes", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // The same page tabs the admin panel uses, so the two screens read the same way.
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Spacing.Screen)
+                        .padding(top = 2.dp, bottom = 6.dp),
+                ) {
+                    ThemeTab(label = "Looks", active = true, enabled = true) {}
+                    ThemeTab(label = "Advanced", active = false, enabled = advancedOn, onClick = onAdvanced)
                 }
 
                 LazyVerticalGrid(
@@ -513,4 +526,47 @@ private fun SectionHeading(text: String) {
         color = TextSoft,
         modifier = Modifier.padding(top = 6.dp),
     )
+}
+
+/** One page tab, drawn exactly like the ones in the admin panel. */
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.ThemeTab(
+    label: String,
+    active: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = if (active) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = if (enabled) 1f else 0.5f)
+        },
+        border = BorderStroke(
+            1.dp,
+            if (active) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+            },
+        ),
+        modifier = Modifier
+            .weight(1f)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(enabled = enabled, onClick = onClick),
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            color = if (active) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.45f)
+            },
+            modifier = Modifier.padding(vertical = 9.dp),
+        )
+    }
 }

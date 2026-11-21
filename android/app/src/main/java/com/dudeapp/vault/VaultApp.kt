@@ -292,6 +292,23 @@ fun VaultApp(
     // Picks up special access given or removed by the admin since the last time.
     // What this account may do: its level, its switches and the looks shared with it.
     var access by remember { mutableStateOf(AccessStore(context).access()) }
+    // What the server says this name may use. Applied only when the server answers for this
+    // device: with no claimed name, or offline, nothing is restricted — a lock that depends on
+    // a network call must never make the vault unusable on a plane.
+    var grantsActive by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val claimed = context
+            .getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
+            .getString("claimed_name", null)
+            ?: return@LaunchedEffect
+        val remote = Supabase.myAccess(context, claimed) ?: return@LaunchedEffect
+        if (!remote.granted) return@LaunchedEffect
+        val granted = remote.features.mapNotNull { AccessFeature.of(it) }.toSet()
+        access = access.copy(level = AccessLevel.of(remote.level), features = access.features + granted)
+        grantsActive = true
+    }
+    val chatsAllowed = !grantsActive || access.has(AccessFeature.CHATS)
+    LaunchedEffect(chatsAllowed) { if (!chatsAllowed) chatView = false }
     val specialAccess = access.theme
     var themesOpen by remember { mutableStateOf(false) }
     var advancedThemesOpen by remember { mutableStateOf(false) }
@@ -1603,7 +1620,9 @@ fun VaultApp(
                         }
 
                         if (currentTab == Tab.NOTES) {
-                            TextModeChips(chatView = chatView, onChange = { chatView = it })
+                            if (chatsAllowed) {
+                                TextModeChips(chatView = chatView, onChange = { chatView = it })
+                            }
                             Spacer(Modifier.height(6.dp))
                         }
 
@@ -1970,6 +1989,7 @@ fun VaultApp(
                     name = profile.name,
                     avatar = profile.avatar,
                     drive = drive,
+                    backupAllowed = !grantsActive || access.has(AccessFeature.BACKUP),
                     onPickPhoto = {
                         onExternal()
                         avatarPicker.launch(
