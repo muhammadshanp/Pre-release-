@@ -19,6 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -136,6 +138,22 @@ internal fun PreReChatField(
                 }
             }
         },
+    )
+}
+
+/**
+ * The one deliberate piece of colour in a monochrome design: the owner's tick.
+ * 14dp, #1D9BF0, and only ever next to a name the server marks verified.
+ */
+internal val PreReVerifiedBlue = Color(0xFF1D9BF0)
+
+@Composable
+internal fun VerifiedTick(size: androidx.compose.ui.unit.Dp = 14.dp) {
+    Icon(
+        imageVector = androidx.compose.material.icons.Icons.Filled.Verified,
+        contentDescription = "Verified",
+        tint = PreReVerifiedBlue,
+        modifier = Modifier.size(size),
     )
 }
 

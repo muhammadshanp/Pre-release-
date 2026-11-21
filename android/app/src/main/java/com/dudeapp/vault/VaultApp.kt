@@ -297,11 +297,16 @@ fun VaultApp(
     // a network call must never make the vault unusable on a plane.
     var grantsActive by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        val claimed = context
-            .getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
-            .getString("claimed_name", null)
-            ?: return@LaunchedEffect
+        val prefs = context.getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
+        // The owner can rename a name from the panel. The phone asks the server which name it
+        // holds, so a rename lands here instead of leaving the phone with a name that is gone.
+        val synced = Supabase.myName(context)
+        if (synced != null && synced != prefs.getString("claimed_name", null)) {
+            prefs.edit().putString("claimed_name", synced).apply()
+        }
+        val claimed = synced ?: prefs.getString("claimed_name", null) ?: return@LaunchedEffect
         val remote = Supabase.myAccess(context, claimed) ?: return@LaunchedEffect
+        prefs.edit().putBoolean("verified", remote.granted && remote.verified).apply()
         if (!remote.granted) return@LaunchedEffect
         val granted = remote.features.mapNotNull { AccessFeature.of(it) }.toSet()
         access = access.copy(level = AccessLevel.of(remote.level), features = access.features + granted)
