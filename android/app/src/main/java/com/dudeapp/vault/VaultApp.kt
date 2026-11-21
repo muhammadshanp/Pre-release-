@@ -1262,9 +1262,10 @@ fun VaultApp(
             catalogueProblem = catalogProblem,
             onRefresh = { loadCatalogue(lookOnline = true) },
             onPick = onThemeChange,
-            // The advanced looks are the admin's own; everyone else does not see the page.
+            // Advanced mode has to be on for the page to mean anything: it is the switch
+            // that lets a look carry its own background and card pictures.
             onAdvanced = {
-                if (access.copy(admin = isAdmin).advanced && settings.advancedMode) {
+                if (settings.advancedMode) {
                     themesOpen = false
                     advancedThemesOpen = true
                 }

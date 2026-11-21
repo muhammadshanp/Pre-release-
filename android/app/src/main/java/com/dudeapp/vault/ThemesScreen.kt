@@ -143,8 +143,8 @@ fun ThemesScreen(
                                 fontSize = 13.sp,
                             )
                             // Backgrounds and card pictures, kept apart, on their own page.
-                            // The page is the admin's own, so the entry is hidden for everyone else.
-                            if (access.advanced) {
+                            // Open to everyone: it is part of pre re, not a privilege.
+                            run {
                             Spacer(Modifier.height(10.dp))
                             Surface(
                                 shape = RoundedCornerShape(20.dp),
