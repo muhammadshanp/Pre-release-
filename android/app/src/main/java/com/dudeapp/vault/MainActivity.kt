@@ -70,6 +70,13 @@ class MainActivity : FragmentActivity() {
         theme = themeStore.load(catalogThemes).forAccess(AccessStore(this).access())
         applyNightMode(theme.dark)
         val settings = settingsStore.load()
+        // Advanced mode off means no advanced look, whatever was worn before.
+        val bundleStore = BundleStore(this)
+        Bundles.advancedOn.value = settings.advancedMode
+        Bundles.applied.value =
+            if (settings.advancedMode) bundleStore.appliedId()?.let(bundleStore::theme) else null
+        val cardPhotos = CardPhotoStore(this)
+        if (!settings.advancedMode) cardPhotos.publishPlain()
         // A picker left open (Android may rebuild the app behind it) means this start-up is the
         // user coming back with a file, not them setting off. The share sheet, file picker and
         // camera all count, so the lock screen must not swallow the file.
@@ -94,8 +101,15 @@ class MainActivity : FragmentActivity() {
                 controller.isAppearanceLightNavigationBars = !dark
                 onDispose { }
             }
-            LaunchedEffect(theme.dark) { applyNightMode(theme.dark) }
-            PVaultTheme(theme) {
+            CompositionLocalProvider(LocalDownloadedThemes provides catalogThemes) {
+            // A theme made on this phone replaces the chosen look, backdrop and cards and all,
+            // but only while advanced mode is on. Read as state, so flipping the switch
+            // re-themes the whole window there and then, with no restart.
+            val ownTheme = if (Bundles.advancedOn.value) Bundles.applied.value else null
+            val ownPreset = ownTheme?.toPreset(theme) ?: theme
+            LaunchedEffect(ownPreset.dark) { applyNightMode(ownPreset.dark) }
+            PVaultTheme(ownPreset) {
+                CompositionLocalProvider(LocalThemeCards provides ownTheme?.cards.orEmpty()) {
                 when {
                     needsLockChoice -> LockChoiceScreen(
                         onEnable = {
@@ -148,6 +162,8 @@ class MainActivity : FragmentActivity() {
                         },
                     )
                 }
+            }
+            }
             }
         }
     }

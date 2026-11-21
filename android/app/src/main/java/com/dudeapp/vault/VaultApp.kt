@@ -284,6 +284,19 @@ fun VaultApp(
     // What this account may do: its level, its switches and the looks shared with it.
     var access by remember { mutableStateOf(AccessStore(context).access()) }
     val specialAccess = access.theme
+    var themesOpen by remember { mutableStateOf(false) }
+    var advancedThemesOpen by remember { mutableStateOf(false) }
+    var bundlesOpen by remember { mutableStateOf(false) }
+    // A theme made on this phone, if one is being worn. Advanced off means none is.
+    val ownTheme = Bundles.worn
+    val bundlesStore = remember { BundleStore(context) }
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { Bundles.publish(bundlesStore) } }
+    // The photos this phone chose for its cards, one per card at most.
+    val cardPhotos = remember { CardPhotoStore(context) }
+    // Read as state, so a card redraws the moment its photo is chosen or removed.
+    val photoFiles by CardPhotoFiles.current
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { cardPhotos.publish() } }
+
     val themeStore = remember { ThemeStore(context) }
     // Looks that arrive from the theme catalogue, without a new app build.
     val catalogue = remember { ThemeCatalogue(context) }
@@ -326,6 +339,10 @@ fun VaultApp(
     var restorePrompt by remember { mutableStateOf(false) }
     val settingsStore = remember { SettingsStore(context) }
     var settings by remember { mutableStateOf(settingsStore.load()) }
+    // With advanced mode off no card photo is shown at all, so the cards go back to the
+    // pictures the chosen theme gives them.
+    val advancedPhotos: Map<CardPicture, File> =
+        if (settings.advancedMode) photoFiles else emptyMap()
     var settingsOpen by remember { mutableStateOf(false) }
 
     fun presentUpdate(latest: AppUpdate) {
@@ -1144,6 +1161,7 @@ fun VaultApp(
     val chatDetail = openChat
     BackHandler(
         enabled = detail == null && chatDetail == null && !settingsOpen && !adminOpen && !inboxOpen &&
+            !themesOpen && !advancedThemesOpen && !bundlesOpen &&
             (searchOpen || query.isNotBlank() || selecting || tab != Tab.HOME || reelFilter != null),
     ) {
         when {
@@ -1173,16 +1191,109 @@ fun VaultApp(
             onAdminChanged = { isAdmin = AdminStore(context).isAdmin() },
             onBack = { adminOpen = false },
         )
+    } else if (advancedThemesOpen) {
+        AdvancedThemesScreen(
+            theme = theme,
+            access = access.copy(admin = isAdmin),
+            photos = advancedPhotos,
+            onPhoto = { kind, uri ->
+                if (uri != null) {
+                    scope.launch {
+                        if (cardPhotos.save(kind, uri)) {
+                            cardPhotos.publish()
+                        } else {
+                            Toast.makeText(context, "Could not save that photo", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            },
+            onClearPhoto = { kind ->
+                cardPhotos.clear(kind)
+                cardPhotos.publish()
+            },
+            // The whole background: one image, or back to the theme's own.
+            onBackground = { uri ->
+                if (uri != null) {
+                    scope.launch {
+                        if (cardPhotos.saveBackground(uri)) {
+                            cardPhotos.publish()
+                        } else {
+                            Toast.makeText(context, "Could not save that image", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            },
+            onClearBackground = {
+                cardPhotos.clearBackground()
+                cardPhotos.publish()
+            },
+            bundlesOpen = bundlesOpen,
+            onBundles = { bundlesOpen = it },
+            onOpenBundles = {
+                bundlesOpen = true
+            },
+            onPick = onThemeChange,
+            onBack = { advancedThemesOpen = false },
+        )
+    } else if (themesOpen) {
+        ThemesScreen(
+            theme = theme,
+            access = access.copy(admin = isAdmin),
+            // The switch is on the Theme page itself, so advanced mode is turned on and off
+            // where the Advanced page lives.
+            advancedOn = settings.advancedMode,
+            onAdvancedChange = { on ->
+                settings = settings.copy(advancedMode = on)
+                settingsStore.save(settings)
+                // Advanced off switches the advanced things themselves off, not just their
+                // screens: the theme's own background and cards come back for the whole app.
+                Bundles.advancedOn.value = on
+                cardPhotos.publish()
+                if (!on) {
+                    // Leaving also closes the pages the switch hides.
+                    advancedThemesOpen = false
+                    bundlesOpen = false
+                }
+            },
+            catalogThemes = catalogThemes.filter {
+                it.isAllowedFor(GoogleAccountStore(context).email(), access.theme, access)
+            },
+            refreshing = catalogRefreshing,
+            catalogueProblem = catalogProblem,
+            onRefresh = { loadCatalogue(lookOnline = true) },
+            onPick = onThemeChange,
+            // The advanced looks are the admin's own; everyone else does not see the page.
+            onAdvanced = {
+                if (access.copy(admin = isAdmin).advanced && settings.advancedMode) {
+                    themesOpen = false
+                    advancedThemesOpen = true
+                }
+            },
+            advancedInUse = Bundles.applied.value != null || CardPhotoFiles.current.value.isNotEmpty() || CardPhotoFiles.background.value != null,
+            onBack = { themesOpen = false },
+        )
     } else if (settingsOpen) {
         SettingsScreen(
             theme = theme,
             settings = settings,
             update = availableUpdate,
+            access = access,
             onTheme = onThemeChange,
+            onThemes = {
+                settingsOpen = false
+                themesOpen = true
+            },
             onSettings = { next ->
                 val autoWasOff = !settings.autoBackup
+                val advancedChanged = next.advancedMode != settings.advancedMode
                 settings = next
                 settingsStore.save(next)
+                // The switch here and the one on the Theme page are the same setting, so
+                // advanced off sets the advanced look aside from either place.
+                if (advancedChanged) {
+                    Bundles.advancedOn.value = next.advancedMode
+                    cardPhotos.publish()
+                }
                 if (next.appLock && !Auth.hasPin(context)) onPinSetup()
                 if (autoWasOff && next.autoBackup && driveStore.hasPending()) {
                     autoBackupTick += 1
@@ -1261,6 +1372,8 @@ fun VaultApp(
                     onSettings = { closeMenu { settingsOpen = true } },
                     isAdmin = isAdmin,
                     onAdmin = { closeMenu { adminOpen = true } },
+                    canTheme = access.theme,
+                    onThemes = { closeMenu { themesOpen = true } },
                     signedIn = signedIn,
                     onSignIn = { closeMenu { adminOpen = true } },
                     onBackup = { closeMenu { backupNow() } },
@@ -2473,38 +2586,129 @@ private fun HomeContent(
 
 @Composable
 private fun HomeHero(total: Int) {
-    val colors = preReColors()
+    val context = LocalContext.current
+    val preset = LocalThemePreset.current
+    val colors = preset.gradient ?: listOf(Color(0xFFF0703F), Color(0xFFB9391A))
+    val shape = RoundedCornerShape(28.dp)
+    val heroPhoto = LocalThemeCards.current[CardPicture.HERO] ?: CardPhotoFiles.current.value[CardPicture.HERO]
+    val heroPicture = if (heroPhoto != null) null else preset.cardPictures[CardPicture.HERO]
+    val artwork = if (heroPicture != null) {
+        remember(heroPicture) {
+            BitmapFactory.decodeResource(context.resources, heroPicture)?.asImageBitmap()
+        }
+    } else if (preset.heroArt) {
+        themeArtwork(preset)
+    } else {
+        null
+    }
     Box(
         Modifier
             .fillMaxWidth()
-            .clip(PreReControlShape)
-            .background(colors.primaryFill)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .clip(shape)
+            .background(Brush.linearGradient(colors)),
     ) {
-        Column {
+        val ownPhotoArt = heroPhoto?.let { remember(it) { CardPictures.load(context.resources, null, it) } }
+        if (ownPhotoArt != null) {
+            // A photo of the user's own fills the card, cropped; the number and the label stay
+            // where they are, over a wash that keeps them readable.
+            Image(
+                bitmap = ownPhotoArt,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0f to Color.Black.copy(alpha = 0.5f),
+                            0.55f to Color.Black.copy(alpha = 0.15f),
+                            1f to Color.Black.copy(alpha = 0.45f),
+                        ),
+                    ),
+            )
+        } else if (heroPicture != null && artwork != null) {
+            // A card picture of its own covers the whole card, cropped to fill, so any
+            // picture works whatever its size; the card keeps its size and shape.
+            Image(
+                bitmap = artwork,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to Color.Black.copy(alpha = 0.62f),
+                            0.45f to Color.Black.copy(alpha = 0.32f),
+                            1f to Color.Transparent,
+                        ),
+                    ),
+            )
+        } else if (artwork != null) {
+            // A theme picture (not a card picture) keeps the right-side treatment.
+            Image(
+                bitmap = artwork,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.CenterEnd,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.62f)
+                    .align(Alignment.CenterEnd),
+            )
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.62f)
+                    .align(Alignment.CenterEnd)
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to colors.first(),
+                            0.45f to colors.first().copy(alpha = 0.55f),
+                            1f to Color.Transparent,
+                        ),
+                    ),
+            )
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(
+                        Brush.horizontalGradient(
+                            0f to colors.first().copy(alpha = 0.65f),
+                            0.5f to Color.Transparent,
+                        ),
+                    ),
+            )
+        }
+        Column(Modifier.padding(horizontal = 22.dp, vertical = 20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Outlined.Lock,
                     contentDescription = null,
-                    tint = colors.onPrimaryFill.copy(alpha = 0.75f),
-                    modifier = Modifier.size(14.dp),
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "Private vault",
-                    color = colors.onPrimaryFill.copy(alpha = 0.75f),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
+                    text = "PRIVATE VAULT",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.2.sp,
                 )
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
                 text = total.toString(),
-                color = colors.onPrimaryFill,
-                fontSize = 40.sp,
-                lineHeight = 44.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = (-1).sp,
+                color = Color.White,
+                fontSize = 44.sp,
+                lineHeight = 48.sp,
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = if (total == 1) {
@@ -2512,8 +2716,8 @@ private fun HomeHero(total: Int) {
                 } else {
                     "items kept safe on this device"
                 },
-                color = colors.onPrimaryFill.copy(alpha = 0.75f),
-                fontSize = 13.sp,
+                color = Color.White.copy(alpha = 0.92f),
+                fontSize = 14.sp,
             )
         }
     }
@@ -2527,11 +2731,18 @@ private fun HomeHero(total: Int) {
 @Composable
 private fun themeArtwork(preset: ThemePreset): ImageBitmap? {
     val context = LocalContext.current
+    val downloaded = LocalDownloadedThemes.current
     return when (val style = preset.backdrop) {
-        is BackdropStyle.Remote -> null
+        is BackdropStyle.Remote -> {
+            val theme = downloaded.firstOrNull { it.pictureUrl == style.url }
+            val file = theme?.let { ThemeCatalogue(context).picture(it) }
+            file?.let { ThemePictures.get(it)?.asImageBitmap() }
+        }
         is BackdropStyle.Picture -> remember(style.image) {
             BitmapFactory.decodeResource(context.resources, style.image)?.asImageBitmap()
         }
+        // A theme made on this phone carries its photos with it, so its backdrop is not an
+        // artwork source here; the card photos come from LocalThemeCards instead.
         is BackdropStyle.LocalFile -> null
         BackdropStyle.Plain -> null
     }
@@ -2548,8 +2759,8 @@ private fun HomeTile(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(22.dp)
-    // The design has no card pictures: a tile is its hairline and its label.
-    val photo: File? = null
+    // A theme made on this phone first, then a photo chosen for this card on its own.
+    val photo = LocalThemeCards.current[kind] ?: CardPhotoFiles.current.value[kind]
     // A photo of the user's own is the whole card; the theme's picture sits behind a wash.
     val ownPhoto = photo != null
     val picture = if (ownPhoto) null else LocalThemePreset.current.cardPictures[kind]
@@ -2758,6 +2969,8 @@ private fun MenuDrawer(
     onSettings: () -> Unit,
     isAdmin: Boolean,
     onAdmin: () -> Unit,
+    canTheme: Boolean,
+    onThemes: () -> Unit,
     /** A Google account is signed in on this phone. */
     signedIn: Boolean,
     /** Starts Google's own sign-in screen for the admin panel. */
@@ -2790,6 +3003,8 @@ private fun MenuDrawer(
         Spacer(Modifier.height(10.dp))
         MenuDrawerItem(Icons.Outlined.Person, "Profile", onProfile)
         MenuDrawerItem(Icons.Outlined.Settings, "Settings", onSettings)
+        // The Theme page itself is for everyone; only its picture looks need special access.
+        MenuDrawerItem(Icons.Outlined.Palette, "Theme", onThemes)
         if (!signedIn) {
             MenuDrawerItem(Icons.Outlined.Login, "Sign in with Google", onSignIn)
         }

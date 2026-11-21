@@ -53,16 +53,13 @@ object Spacing {
     val Section = 24.dp
 }
 
-/**
- * The design is monochrome, so a section is told apart by its weight, not its hue: five
- * steps of grey that read on white and on #0C0D10 alike.
- */
+/** One colour per kind of content, so each section is recognisable at a glance. */
 object Accent {
-    val Photo = Color(0xFF3D3D3D)
-    val Pdf = Color(0xFF575757)
-    val Note = Color(0xFF6E6E6E)
-    val Chat = Color(0xFF8A8A8A)
-    val Reel = Color(0xFFA6A6A6)
+    val Photo = Color(0xFF3B82F6)
+    val Pdf = Color(0xFFEF4444)
+    val Note = Color(0xFFF59E0B)
+    val Chat = Color(0xFF10B981)
+    val Reel = Color(0xFFD946EF)
 }
 
 fun accentOf(type: ItemType): Color = when (type) {
