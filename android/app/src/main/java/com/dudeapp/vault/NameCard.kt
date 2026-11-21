@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +42,15 @@ fun PreReNameCard() {
     val colors = preReColors()
 
     var claimed by remember { mutableStateOf(prefs.getString("claimed_name", null)) }
+    var verified by remember { mutableStateOf(prefs.getBoolean("verified", false)) }
+    DisposableEffect(prefs) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == "claimed_name") claimed = prefs.getString("claimed_name", null)
+            if (key == "verified") verified = prefs.getBoolean("verified", false)
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
     var typing by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -75,6 +85,10 @@ fun PreReNameCard() {
                         val stored = normalizeUsername(wanted)
                         prefs.edit().putString("claimed_name", stored).apply()
                         claimed = stored
+                        // The tick travels with the grant, not with the claim.
+                        val access = Supabase.myAccess(context, stored)
+                        verified = access?.verified == true
+                        prefs.edit().putBoolean("verified", verified).apply()
                         typing = ""
                         good = true
                         message = "@$stored is yours."
@@ -114,16 +128,22 @@ fun PreReNameCard() {
 
         val held = claimed
         if (held != null) {
-            // Claimed once, and that is the end of it: the name is not editable from here.
-            Text(
-                text = "@$held",
-                color = colors.ink,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
+            // Claimed once, and that is the end of it: the owner changes names, not the phone.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "@$held",
+                    color = colors.ink,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                if (verified) {
+                    Spacer(Modifier.width(4.dp))
+                    VerifiedTick(15.dp)
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "This is your name. It cannot be changed.",
+                text = "This is your name. Only the owner can change it.",
                 color = colors.ink.copy(alpha = 0.6f),
                 fontSize = 13.sp,
             )

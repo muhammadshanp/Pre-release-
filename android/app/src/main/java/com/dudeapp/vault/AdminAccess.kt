@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +37,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Refresh
 import kotlinx.coroutines.launch
 
@@ -56,19 +59,28 @@ internal fun AdminAccessCard() {
     var busy by remember { mutableStateOf(false) }
     var problem by remember { mutableStateOf<String?>(null) }
     var names by remember { mutableStateOf<List<Supabase.RemoteName>>(emptyList()) }
+    var reserved by remember { mutableStateOf<List<Supabase.ReservedName>>(emptyList()) }
     var saving by remember { mutableStateOf<String?>(null) }
+    var reserveDraft by remember { mutableStateOf("") }
+    var reserveNote by remember { mutableStateOf("") }
+    // The name being changed, and the field it is being changed to.
+    var renameTarget by remember { mutableStateOf<Supabase.RemoteName?>(null) }
+    var renameDraft by remember { mutableStateOf("") }
 
     fun load() {
         busy = true
         problem = null
         scope.launch {
-            val list = Supabase.adminNames(context, passphrase)
+            val valid = Supabase.isAdminKey(context, passphrase)
+            val list = if (valid) Supabase.adminNames(context, passphrase) else null
+            val held = if (valid) Supabase.adminReserved(context, passphrase) else null
             busy = false
-            if (list == null) {
+            if (list == null || held == null) {
                 problem = "The passphrase was not accepted, or the server could not be reached."
                 unlocked = false
             } else {
                 names = list
+                reserved = held
                 unlocked = true
             }
         }
@@ -93,6 +105,7 @@ internal fun AdminAccessCard() {
             value = passphrase,
             onValueChange = {
                 passphrase = it
+                unlocked = false
                 problem = null
             },
             label = { Text("Owner passphrase") },
@@ -141,6 +154,28 @@ internal fun AdminAccessCard() {
                 NameAccessRow(
                     name = name,
                     saving = saving == name.username,
+                    onRename = {
+                        renameTarget = name
+                        renameDraft = name.username
+                        problem = null
+                    },
+                    onVerify = { wanted ->
+                        scope.launch {
+                            val ok = Supabase.adminVerify(context, passphrase, name.username, wanted)
+                            if (ok) {
+                                names = names.map {
+                                    if (it.username == name.username) it.copy(verified = wanted) else it
+                                }
+                                problem = if (wanted) {
+                                    "@${name.username} now wears the tick."
+                                } else {
+                                    "The tick was taken off @${name.username}."
+                                }
+                            } else {
+                                problem = "Could not change the tick. Check the connection."
+                            }
+                        }
+                    },
                     onSave = { level, features ->
                         saving = name.username
                         problem = null
@@ -169,7 +204,167 @@ internal fun AdminAccessCard() {
                 )
                 Spacer(Modifier.height(10.dp))
             }
+
+            // ---- names set aside ----
+            Spacer(Modifier.height(6.dp))
+            Text("Reserved names", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                "Nobody can claim one of these, even before it is used.",
+                color = TextSoft,
+                fontSize = 12.sp,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = reserveDraft,
+                onValueChange = { reserveDraft = normalizeUsername(it).take(24); problem = null },
+                label = { Text("Name to set aside") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = reserveNote,
+                onValueChange = { reserveNote = it.take(60) },
+                label = { Text("Note (optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    val wanted = normalizeUsername(reserveDraft)
+                    if (wanted.isEmpty()) return@Button
+                    busy = true
+                    scope.launch {
+                        val status = Supabase.adminReserve(context, passphrase, wanted, reserveNote.trim())
+                        busy = false
+                        when (status) {
+                            "ok" -> {
+                                reserved = (reserved.filterNot { it.name == wanted } + Supabase.ReservedName(wanted, reserveNote.trim()))
+                                    .sortedBy { it.name }
+                                reserveDraft = ""
+                                reserveNote = ""
+                                problem = "@$wanted is set aside."
+                            }
+                            null -> problem = "Could not reach the server."
+                            else -> problem = Supabase.claimProblem(status)
+                        }
+                    }
+                },
+                enabled = reserveDraft.isNotBlank() && !busy,
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text("Set aside")
+            }
+
+            Spacer(Modifier.height(10.dp))
+            if (reserved.isEmpty()) {
+                Text("Nothing is set aside yet.", color = TextSoft, fontSize = 12.sp)
+            } else {
+                reserved.forEach { held ->
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                    ) {
+                        Row(
+                            Modifier.padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text("@${held.name}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                if (held.note.isNotBlank()) {
+                                    Text(held.note, color = TextSoft, fontSize = 11.sp)
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        val ok = Supabase.adminUnreserve(context, passphrase, held.name)
+                                        if (ok) {
+                                            reserved = reserved.filterNot { it.name == held.name }
+                                            problem = "@${held.name} is free again."
+                                        } else {
+                                            problem = "Could not release @${held.name}."
+                                        }
+                                    }
+                                },
+                            ) {
+                                Icon(Icons.Outlined.Close, contentDescription = "Release the name")
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    // ---- changing a name ----
+    val target = renameTarget
+    if (target != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { renameTarget = null },
+            title = { Text("Change @${target.username}") },
+            text = {
+                Column {
+                    Text(
+                        "The person keeps their access; it moves with the new name. Their phone " +
+                            "picks the new name up the next time pre re opens.",
+                        color = TextSoft,
+                        fontSize = 12.sp,
+                    )
+                    problem?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = renameDraft,
+                        onValueChange = { renameDraft = normalizeUsername(it).take(24); problem = null },
+                        label = { Text("New name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val wanted = normalizeUsername(renameDraft)
+                        busy = true
+                        scope.launch {
+                            val result = Supabase.adminRename(
+                                context = context,
+                                passphrase = passphrase,
+                                old = target.username,
+                                new = wanted,
+                            )
+                            busy = false
+                            if (result == null) {
+                                problem = "Could not reach the server."
+                            } else if (result.status == "ok" && result.name != null) {
+                                names = names.map {
+                                    if (it.username == target.username) {
+                                        it.copy(username = result.name.orEmpty())
+                                    } else {
+                                        it
+                                    }
+                                }
+                                problem = "@${target.username} is now @${result.name}."
+                                renameTarget = null
+                            } else {
+                                problem = Supabase.claimProblem(result.status)
+                            }
+                        }
+                    },
+                    enabled = renameDraft.isNotBlank() && !busy,
+                ) { Text("Change it") }
+            },
+            dismissButton = {
+                TextButton(onClick = { renameTarget = null }) { Text("Cancel") }
+            },
+        )
     }
 }
 
@@ -178,6 +373,8 @@ internal fun AdminAccessCard() {
 private fun NameAccessRow(
     name: Supabase.RemoteName,
     saving: Boolean,
+    onRename: () -> Unit,
+    onVerify: (Boolean) -> Unit,
     onSave: (String, List<String>) -> Unit,
 ) {
     var level by remember(name.username, name.level) { mutableStateOf(name.level) }
@@ -192,7 +389,13 @@ private fun NameAccessRow(
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("@${name.username}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("@${name.username}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        if (name.verified) {
+                            Spacer(Modifier.width(4.dp))
+                            VerifiedTick(14.dp)
+                        }
+                    }
                     Text(
                         text = if (name.claimedAt.length >= 10) {
                             "claimed " + name.claimedAt.take(10)
@@ -204,6 +407,9 @@ private fun NameAccessRow(
                     )
                 }
                 if (saving) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                IconButton(onClick = onRename) {
+                    Icon(Icons.Outlined.Edit, contentDescription = "Change this name")
+                }
             }
             Spacer(Modifier.height(10.dp))
 
@@ -253,6 +459,18 @@ private fun NameAccessRow(
             }
 
             Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Blue tick", fontSize = 13.sp)
+                    Text(
+                        "Marks this name as the owner's.",
+                        color = TextSoft,
+                        fontSize = 11.sp,
+                    )
+                }
+                Switch(checked = name.verified, onCheckedChange = onVerify)
+            }
+
             AccessFeature.entries.forEach { feature ->
                 Row(
                     Modifier

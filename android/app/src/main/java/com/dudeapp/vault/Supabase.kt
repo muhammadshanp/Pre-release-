@@ -136,6 +136,7 @@ internal object Supabase {
         val claimedAt: String,
         val level: String,
         val features: List<String>,
+        val verified: Boolean = false,
     )
 
     /** Every claimed name. Null means the passphrase was wrong or the server was unreachable. */
@@ -153,6 +154,7 @@ internal object Supabase {
                     features = row.optJSONArray("features")?.let { list ->
                         (0 until list.length()).mapNotNull { list.optString(it).takeIf(String::isNotEmpty) }
                     }.orEmpty(),
+                    verified = row.optBoolean("verified"),
                 )
             }
         }
@@ -178,7 +180,12 @@ internal object Supabase {
     }
 
     /** What this install's own name may use. Granted is false for any other device. */
-    data class RemoteAccess(val level: String, val features: List<String>, val granted: Boolean)
+    data class RemoteAccess(
+        val level: String,
+        val features: List<String>,
+        val granted: Boolean,
+        val verified: Boolean = false,
+    )
 
     suspend fun myAccess(context: Context, username: String): RemoteAccess? =
         withContext(Dispatchers.IO) {
@@ -193,8 +200,89 @@ internal object Supabase {
                     (0 until list.length()).mapNotNull { list.optString(it).takeIf(String::isNotEmpty) }
                 }.orEmpty(),
                 granted = row.optBoolean("granted"),
+                verified = row.optBoolean("verified"),
             )
         }
+
+    /** The name this phone holds, as the server knows it. Null when it holds none. */
+    suspend fun myName(context: Context): String? = withContext(Dispatchers.IO) {
+        val json = rpc("pre_re_my_name", JSONObject().put("p_device", deviceId(context)))
+            ?: return@withContext null
+        if (json.isNull("value")) null else json.optString("value").takeIf { it.isNotBlank() }
+    }
+
+    data class ReservedName(val name: String, val note: String)
+
+    /** The names the owner has set aside. Null when the key was refused or the phone is offline. */
+    suspend fun adminReserved(context: Context, passphrase: String): List<ReservedName>? =
+        withContext(Dispatchers.IO) {
+            val json = rpc("pre_re_admin_reserved", JSONObject().put("p_key", keyHash(passphrase)))
+                ?: return@withContext null
+            val rows = json.optJSONArray("value") ?: return@withContext emptyList()
+            (0 until rows.length()).mapNotNull { index ->
+                val row = rows.optJSONObject(index) ?: return@mapNotNull null
+                ReservedName(row.optString("name"), row.optString("note"))
+            }
+        }
+
+    /** Sets a name aside so nobody may claim it. Returns the server's status code. */
+    suspend fun adminReserve(
+        context: Context,
+        passphrase: String,
+        name: String,
+        note: String,
+    ): String? = withContext(Dispatchers.IO) {
+        val body = JSONObject()
+            .put("p_key", keyHash(passphrase))
+            .put("p_name", normalizeUsername(name))
+            .put("p_note", note)
+        rpc("pre_re_admin_reserve", body)?.optString("status")?.takeIf { it.isNotEmpty() }
+    }
+
+    suspend fun adminUnreserve(context: Context, passphrase: String, name: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject()
+                .put("p_key", keyHash(passphrase))
+                .put("p_name", normalizeUsername(name))
+            rpc("pre_re_admin_unreserve", body)?.optBoolean("value") ?: false
+        }
+
+    /** Turns the blue tick on or off for one name. */
+    suspend fun adminVerify(
+        context: Context,
+        passphrase: String,
+        name: String,
+        verified: Boolean,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val body = JSONObject()
+            .put("p_key", keyHash(passphrase))
+            .put("p_username", normalizeUsername(name))
+            .put("p_verified", verified)
+        rpc("pre_re_admin_verify", body)?.optBoolean("value") ?: false
+    }
+
+    data class RenameResult(val status: String, val name: String?)
+
+    /**
+     * Changes a name on the owner's behalf. The person's access moves with the name, because
+     * the grants row is renamed by the database itself, not by the app.
+     */
+    suspend fun adminRename(
+        context: Context,
+        passphrase: String,
+        old: String,
+        new: String,
+    ): RenameResult? = withContext(Dispatchers.IO) {
+        val body = JSONObject()
+            .put("p_key", keyHash(passphrase))
+            .put("p_old", normalizeUsername(old))
+            .put("p_new", normalizeUsername(new))
+        val json = rpc("pre_re_admin_rename", body) ?: return@withContext null
+        RenameResult(
+            status = json.optString("status"),
+            name = json.optString("name").takeIf { it.isNotBlank() },
+        )
+    }
 
     /** Turns the server's terse codes into something a person can act on. */
     fun claimProblem(status: String?): String = when (status) {
@@ -207,6 +295,10 @@ internal object Supabase {
         "chars" -> "Letters, numbers, dots and underscores only, and it must start and end with a letter or number."
         "empty" -> "Type a name first."
         "bad_device" -> "This install could not be identified. Restart pre re and try again."
+        "bad_key" -> "The owner passphrase was not accepted."
+        "no_such_name" -> "That name is not on the server any more. Reload the list."
+        "same" -> "That is already the name."
+        "length" -> "Keep it between 2 and 24 characters."
         else -> "That name could not be saved ($status)."
     }
 }

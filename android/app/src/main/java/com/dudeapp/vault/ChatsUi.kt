@@ -700,16 +700,35 @@ fun ChatScreen(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text(
-                        text = remember {
-                            context.getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
-                                .getString("claimed_name", null)
-                        }?.let { "@$it" } ?: "On this phone",
-                        color = preColors.ink.copy(alpha = 0.5f),
-                        fontSize = 12.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    // The name this phone claimed, with the owner's tick when it has one.
+                    val identityPrefs = remember {
+                        context.getSharedPreferences("pre_re_supabase", android.content.Context.MODE_PRIVATE)
+                    }
+                    var identity by remember {
+                        mutableStateOf(identityPrefs.getString("claimed_name", null) to identityPrefs.getBoolean("verified", false))
+                    }
+                    DisposableEffect(identityPrefs) {
+                        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                            if (key == "claimed_name" || key == "verified") {
+                                identity = identityPrefs.getString("claimed_name", null) to identityPrefs.getBoolean("verified", false)
+                            }
+                        }
+                        identityPrefs.registerOnSharedPreferenceChangeListener(listener)
+                        onDispose { identityPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = identity.first?.let { "@$it" } ?: "On this phone",
+                            color = preColors.ink.copy(alpha = 0.5f),
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (identity.first != null && identity.second) {
+                            Spacer(Modifier.width(3.dp))
+                            VerifiedTick(12.dp)
+                        }
+                    }
                 }
                 IconButton(onClick = { pictureDialogOpen = true }) {
                     Icon(
