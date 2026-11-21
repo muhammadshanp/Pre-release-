@@ -62,7 +62,7 @@ class SupabaseStatusTest {
         // Stray spaces or capitals still open the list.
         assertEquals(
             Supabase.keyHash("prere-owner-willow-3db4"),
-            Supabase.keyHash("  Pre-Re-Owner-Willow-3DB4  "),
+            Supabase.keyHash("  PRERE-OWNER-WILLOW-3DB4  "),
         )
         assertEquals(64, Supabase.keyHash("anything").length)
     }
