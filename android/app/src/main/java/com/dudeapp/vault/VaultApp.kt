@@ -13,6 +13,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +42,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -204,7 +208,12 @@ fun VaultApp(
         scope.launch {
             pagerState.animateScrollToPage(
                 page = target.ordinal,
-                animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing),
+                // A spring, not a 160ms tween: the page carries a little momentum into place
+                // instead of stopping dead the instant the animation ends.
+                animationSpec = spring(
+                    dampingRatio = 0.86f,
+                    stiffness = Spring.StiffnessMediumLow,
+                ),
             )
         }
     }
@@ -1431,9 +1440,17 @@ fun VaultApp(
                 ) {
                 HorizontalPager(
                     state = pagerState,
-                    // Keep every tab composed. Swiping then only moves pages that already
-                    // exist, instead of building the next one in the middle of the gesture.
-                    beyondViewportPageCount = Tab.entries.size,
+                    // One page either side. Composing all five meant every tab's grid, its
+                    // bitmaps and its Backdrop were built and kept alive while any one page
+                    // moved, which is what made a fast swipe stutter.
+                    beyondViewportPageCount = 1,
+                    // A flick always completes the page change and lands centred, so a half
+                    // swipe can no longer leave the content sitting between two tabs.
+                    flingBehavior = PagerDefaults.flingBehavior(
+                        state = pagerState,
+                        pagerSnapDistance = PagerSnapDistance.atMost(1),
+                    ),
+                    key = { Tab.entries[it].name },
                     modifier = Modifier.fillMaxSize(),
                 ) { page ->
                     val currentTab = Tab.entries[page]
@@ -1616,6 +1633,7 @@ fun VaultApp(
                                 ) {
                                     currentVisibleReels.forEach { reel ->
                                         item(key = reel.file.absolutePath) {
+                                            Box(Modifier.animateItem()) {
                                             ReelCard(
                                                 reel = reel,
                                                 selected = reel.file.absolutePath in selectedPaths,
@@ -1629,6 +1647,7 @@ fun VaultApp(
                                                 },
                                                 onMenu = { if (!selecting) reelMenu = reel },
                                             )
+                                            }
                                         }
                                     }
                                 }
@@ -1652,6 +1671,7 @@ fun VaultApp(
                                 ) {
                                     currentVisibleChats.forEach { chat ->
                                         item(key = chat.dir.absolutePath) {
+                                            Box(Modifier.animateItem()) {
                                             ChatRow(
                                                 chat = chat,
                                                 selected = chat.dir.absolutePath in selectedPaths,
@@ -1664,6 +1684,7 @@ fun VaultApp(
                                                     }
                                                 },
                                             )
+                                            }
                                         }
                                     }
                                 }
@@ -1689,6 +1710,7 @@ fun VaultApp(
                                 items(currentVisibleFiles, key = { it.file.absolutePath }) { item ->
                                     if (settings.cardsAsList) {
                                         VaultRow(
+                                            modifier = Modifier.animateItem(),
                                             item = item,
                                             selected = item.file.absolutePath in selectedPaths,
                                             selecting = selecting,
@@ -1711,6 +1733,7 @@ fun VaultApp(
                                         return@items
                                     }
                                     VaultCard(
+                                        modifier = Modifier.animateItem(),
                                         item = item,
                                         selected = item.file.absolutePath in selectedPaths,
                                         selecting = selecting,
@@ -3309,6 +3332,7 @@ private fun addedMessage(added: Int, picked: Int, unit: String): String {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun VaultCard(
+    modifier: Modifier = Modifier,
     item: VaultItem,
     selected: Boolean,
     selecting: Boolean,
@@ -3317,7 +3341,7 @@ private fun VaultCard(
 ) {
     val marked = selecting && selected
     Box(
-        Modifier
+        modifier
             .aspectRatio(0.86f)
             .vaultCard(RoundedCornerShape(22.dp), marked)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
@@ -3558,6 +3582,7 @@ private data class VaultSnapshot(
  */
 @Composable
 private fun VaultRow(
+    modifier: Modifier = Modifier,
     item: VaultItem,
     selected: Boolean,
     selecting: Boolean,
@@ -3567,7 +3592,7 @@ private fun VaultRow(
     val marked = selecting && selected
     val shape = RoundedCornerShape(18.dp)
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
             .vaultCard(shape, marked)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
