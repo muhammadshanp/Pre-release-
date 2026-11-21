@@ -530,7 +530,7 @@ private fun SectionHeading(text: String) {
 
 /** One page tab, drawn exactly like the ones in the admin panel. */
 @Composable
-private fun ThemeTab(
+private fun androidx.compose.foundation.layout.RowScope.ThemeTab(
     label: String,
     active: Boolean,
     enabled: Boolean,
