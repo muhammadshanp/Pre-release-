@@ -119,7 +119,9 @@ internal object Supabase {
     fun keyHash(passphrase: String): String =
         java.security.MessageDigest.getInstance("SHA-256")
             .digest(passphrase.trim().lowercase().toByteArray(Charsets.UTF_8))
-            .joinToString("") { "%02x".format(it) }
+            // Byte is signed, so mask before formatting: without the mask a byte above 0x7f
+            // would print as ffffff80 and the hash would never match the server's.
+            .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xFF) }
 
     suspend fun isAdminKey(context: Context, passphrase: String): Boolean =
         withContext(Dispatchers.IO) {

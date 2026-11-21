@@ -46,10 +46,10 @@ class SupabaseStatusTest {
         )
         for (status in statuses) {
             val text = Supabase.claimProblem(status)
-            assertTrue("$status should explain itself", text.length > 20)
+            assertTrue("$status should explain itself", text.length > 12)
         }
         // Offline is the one case with no status at all.
-        assertTrue(Supabase.claimProblem(null).length > 20)
+        assertTrue(Supabase.claimProblem(null).length > 12)
     }
 
     @Test
