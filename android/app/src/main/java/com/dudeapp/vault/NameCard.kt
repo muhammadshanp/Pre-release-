@@ -88,25 +88,6 @@ fun PreReNameCard() {
         }
     }
 
-    fun release() {
-        val held = claimed ?: return
-        busy = true
-        message = null
-        scope.launch {
-            val done = Supabase.releaseName(context, held)
-            if (done) {
-                prefs.edit().remove("claimed_name").apply()
-                claimed = null
-                good = true
-                message = "@$held is free again."
-            } else {
-                good = false
-                message = "Could not release the name. Check your connection and try again."
-            }
-            busy = false
-        }
-    }
-
     Column(
         Modifier
             .fillMaxWidth()
@@ -124,7 +105,7 @@ fun PreReNameCard() {
         )
         Spacer(Modifier.height(2.dp))
         Text(
-            text = "One name, claimed once. Your photos, notes and chats stay on this phone.",
+            text = "One name, claimed once, then fixed. Your photos, notes and chats stay on this phone.",
             color = colors.ink.copy(alpha = 0.6f),
             fontSize = 14.sp,
             lineHeight = 21.sp,
@@ -133,24 +114,19 @@ fun PreReNameCard() {
 
         val held = claimed
         if (held != null) {
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "@$held",
-                    color = colors.ink,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(Modifier.width(12.dp))
-                PreReOutlineButton(
-                    label = "Release",
-                    onClick = { release() },
-                    modifier = Modifier.width(120.dp),
-                    enabled = !busy,
-                )
-            }
+            // Claimed once, and that is the end of it: the name is not editable from here.
+            Text(
+                text = "@$held",
+                color = colors.ink,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "This is your name. It cannot be changed.",
+                color = colors.ink.copy(alpha = 0.6f),
+                fontSize = 13.sp,
+            )
         } else {
             PreReField(
                 value = typing,
