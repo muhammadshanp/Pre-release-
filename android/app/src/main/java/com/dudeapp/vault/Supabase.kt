@@ -109,6 +109,91 @@ internal object Supabase {
         json.optString("status").takeIf { it.isNotEmpty() }
     }
 
+    // ---- the owner's side ------------------------------------------------------------ //
+    //
+    // The passphrase is never stored in the app and never sent: what travels is its SHA-256,
+    // which is what the database compares against. So the list of names is only readable by
+    // someone who knows the phrase, not by anyone who unpacks the APK.
+
+    /** SHA-256 of a typed passphrase, lower-cased and trimmed, as 64 hex characters. */
+    fun keyHash(passphrase: String): String =
+        java.security.MessageDigest.getInstance("SHA-256")
+            .digest(passphrase.trim().lowercase().toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+
+    suspend fun isAdminKey(context: Context, passphrase: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val json = rpc("pre_re_is_admin", JSONObject().put("p_key", keyHash(passphrase)))
+                ?: return@withContext false
+            json.optBoolean("value") || json.optBoolean("pre_re_is_admin")
+        }
+
+    /** One name as the owner sees it: when it was claimed, and what it may use. */
+    data class RemoteName(
+        val username: String,
+        val claimedAt: String,
+        val level: String,
+        val features: List<String>,
+    )
+
+    /** Every claimed name. Null means the passphrase was wrong or the server was unreachable. */
+    suspend fun adminNames(context: Context, passphrase: String): List<RemoteName>? =
+        withContext(Dispatchers.IO) {
+            val json = rpc("pre_re_admin_names", JSONObject().put("p_key", keyHash(passphrase)))
+                ?: return@withContext null
+            val rows = json.optJSONArray("value") ?: return@withContext emptyList()
+            (0 until rows.length()).mapNotNull { index ->
+                val row = rows.optJSONObject(index) ?: return@mapNotNull null
+                RemoteName(
+                    username = row.optString("username"),
+                    claimedAt = row.optString("created_at"),
+                    level = row.optString("level").ifBlank { "NONE" },
+                    features = row.optJSONArray("features")?.let { list ->
+                        (0 until list.length()).mapNotNull { list.optString(it).takeIf(String::isNotEmpty) }
+                    }.orEmpty(),
+                )
+            }
+        }
+
+    /** Gives one name a level and its switches. False means the key was wrong. */
+    suspend fun setAccess(
+        context: Context,
+        passphrase: String,
+        username: String,
+        level: String,
+        features: List<String>,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val body = JSONObject()
+            .put("p_key", keyHash(passphrase))
+            .put("p_username", username)
+            .put("p_level", level)
+            .put(
+                "p_features",
+                org.json.JSONArray().also { array -> features.forEach { array.put(it) } },
+            )
+        val json = rpc("pre_re_admin_set_access", body) ?: return@withContext false
+        json.optBoolean("value") || json.optBoolean("pre_re_admin_set_access")
+    }
+
+    /** What this install's own name may use. Granted is false for any other device. */
+    data class RemoteAccess(val level: String, val features: List<String>, val granted: Boolean)
+
+    suspend fun myAccess(context: Context, username: String): RemoteAccess? =
+        withContext(Dispatchers.IO) {
+            val body = JSONObject()
+                .put("p_username", normalizeUsername(username))
+                .put("p_device", deviceId(context))
+            val json = rpc("pre_re_my_access", body) ?: return@withContext null
+            val row = json.optJSONArray("value")?.optJSONObject(0) ?: json
+            RemoteAccess(
+                level = row.optString("level").ifBlank { "NONE" },
+                features = row.optJSONArray("features")?.let { list ->
+                    (0 until list.length()).mapNotNull { list.optString(it).takeIf(String::isNotEmpty) }
+                }.orEmpty(),
+                granted = row.optBoolean("granted"),
+            )
+        }
+
     /** Turns the server's terse codes into something a person can act on. */
     fun claimProblem(status: String?): String = when (status) {
         null -> "Could not reach the name service. Check your connection and try again."
